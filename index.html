@@ -1,0 +1,1860 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mis 15 - Martu</title>
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;700&family=Playfair+Display:ital,wght@0,400;0,700;1,700&family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg-color: #0a0e27;
+            --bg-gradient-1: #1a0f3a;
+            --bg-gradient-2: #0d1b2a;
+            --gold: #d4af37;
+            --gold-light: #e8c547;
+            --gold-dark: #b8941f;
+            --silver: #e8e8e8;
+            --text-light: #f5f5f5;
+            --particle-blur: 0.6px;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            font-family: 'Montserrat', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-light);
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+        }
+
+        .nebula-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background:
+                radial-gradient(circle at 20% 15%, rgba(107, 45, 122, 0.3) 0%, transparent 40%),
+                radial-gradient(circle at 80% 85%, rgba(13, 27, 42, 0.4) 0%, transparent 40%),
+                radial-gradient(circle at 50% 50%, rgba(26, 15, 58, 0.2) 0%, transparent 60%),
+                var(--bg-color);
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        #stars-container {
+            position: fixed;
+            top: -10%;
+            left: -10%;
+            width: 120%;
+            height: 120%;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .star-dot {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            animation: twinkle 3s ease-in-out infinite;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+
+        .moon-svg {
+            position: absolute;
+            filter: drop-shadow(0 0 30px rgba(212, 175, 55, 0.4));
+            opacity: 0.85;
+        }
+
+        /* ===== WELCOME OVERLAY ===== */
+        #welcome-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, var(--bg-gradient-1) 0%, var(--bg-gradient-2) 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            transition: opacity 1.2s ease-out, visibility 1.2s ease-out;
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* Luz ambiente del overlay (permanece durante el zoom y se apaga al irse el overlay) */
+        #welcome-overlay::before {
+            content: '';
+            position: absolute;
+            inset: -10%;
+            pointer-events: none;
+            z-index: 0;
+            opacity: 0.0;
+            transition: opacity 0.6s ease;
+            background:
+                radial-gradient(circle at 50% 78%, rgba(255, 236, 175, 0.20) 0%, rgba(255, 220, 145, 0.10) 18%, rgba(255, 220, 145, 0) 55%),
+                radial-gradient(circle at 50% 60%, rgba(255, 248, 230, 0.10) 0%, rgba(255, 248, 230, 0) 45%);
+            filter: blur(12px);
+            mix-blend-mode: screen;
+        }
+
+        /* Cuando el sobre abrió, encendemos la luz ambiente. */
+        #welcome-overlay:has(.envelope.open)::before {
+            opacity: 1;
+        }
+
+        /* Si :has no existe, la encendemos con la clase adicionada por JS */
+        #welcome-overlay.overlay-lit::before { opacity: 1; }
+
+        #welcome-overlay.opened {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            transition: opacity 1.2s ease, visibility 1.2s ease;
+        }
+
+        #welcome-overlay.opened::before { opacity: 0; }
+
+        .invitation-prompt {
+            font-family: 'Dancing Script', cursive;
+            color: var(--gold-light);
+            font-size: clamp(1.5rem, 5vw, 2.2rem);
+            margin-bottom: 80px;
+            text-align: center;
+            animation: fadeInDown 1.5s ease-out 0.3s both;
+            text-shadow: 0 2px 15px rgba(212, 175, 55, 0.4);
+            padding: 0 20px;
+            letter-spacing: 1px;
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+
+        /* ===== ENVELOPE WRAPPER ===== */
+        .envelope-wrapper {
+            position: relative;
+            margin-top: 50px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            perspective: 1500px;
+            z-index: 2001;
+        }
+
+        /* Habilitar puntero solo cuando el overlay es visible */
+        #welcome-overlay:not(.opened) .envelope-wrapper {
+            pointer-events: auto;
+        }
+
+        .envelope {
+            position: relative;
+            width: 350px;
+            height: 240px;
+            background: var(--bg-gradient-2);
+            cursor: pointer;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            transition: box-shadow 0.3s ease;
+            transform-style: preserve-3d;
+            overflow: hidden; /* evita halos/destellos que se "escapan" por los costados en el estado inicial */
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .envelope.open {
+            overflow: visible;
+        }
+
+        /* Animación normal: Flotar suavemente */
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-15px) rotate(1deg); }
+        }
+
+        /* Animación Hover: Temblor intenso */
+        @keyframes shake-hard {
+            0% { transform: translate(1px, 1px) rotate(0deg) scale(1.02); }
+            10% { transform: translate(-1px, -2px) rotate(-1deg) scale(1.02); }
+            20% { transform: translate(-3px, 0px) rotate(1deg) scale(1.02); }
+            30% { transform: translate(3px, 2px) rotate(0deg) scale(1.02); }
+            40% { transform: translate(1px, -1px) rotate(1deg) scale(1.02); }
+            50% { transform: translate(-1px, 2px) rotate(-1deg) scale(1.02); }
+            60% { transform: translate(-3px, 1px) rotate(0deg) scale(1.02); }
+            70% { transform: translate(3px, 1px) rotate(-1deg) scale(1.02); }
+            80% { transform: translate(-1px, -1px) rotate(1deg) scale(1.02); }
+            90% { transform: translate(1px, 2px) rotate(0deg) scale(1.02); }
+            100% { transform: translate(1px, -2px) rotate(-1deg) scale(1.02); }
+        }
+
+        /* ===== EFECTOS MÁGICOS INTERIOR ===== */
+        .magic-glow {
+            position: absolute;
+            top: 56%;
+            left: 50%;
+            transform: translate(-50%, -50%) translateZ(1.5px);
+            width: 140px;
+            height: 140px;
+            background: radial-gradient(circle, rgba(255, 244, 210, 0.85) 0%, rgba(255, 224, 130, 0.38) 45%, rgba(212, 175, 55, 0.12) 70%, transparent 100%);
+            border-radius: 50%;
+            z-index: 2;
+            pointer-events: none;
+            transition: transform 0.75s ease, opacity 0.75s ease, filter 0.75s ease;
+            filter: blur(10px);
+            animation: pulse-glow-circle 2.2s infinite alternate;
+            opacity: 0.9;
+            mix-blend-mode: screen;
+        }
+
+        /*
+          Evitar halos raros por debajo/laterales: en vez de clip-path (muy duro), usamos máscara suave.
+          -webkit-mask para Chromium/Safari. mask para Firefox.
+          La máscara "mata" la parte inferior y deja un fade suave.
+        */
+        .magic-glow {
+            -webkit-mask-image: linear-gradient(to top, rgba(0,0,0,0) 0%, rgba(0,0,0,0.25) 18%, rgba(0,0,0,1) 55%);
+            mask-image: linear-gradient(to top, rgba(0,0,0,0) 0%, rgba(0,0,0,0.25) 18%, rgba(0,0,0,1) 55%);
+        }
+
+        /* En cerrado, el glow circular suele verse "mal"; lo bajamos y dejamos el pulso muy sutil */
+        .magic-glow {
+            opacity: 0.35;
+            filter: blur(12px);
+        }
+
+        /* Fallback si el navegador no soporta blend (evita que el glow se "aplane") */
+        @supports not (mix-blend-mode: screen) {
+            .magic-glow,
+            .inner-glow {
+                mix-blend-mode: normal;
+                opacity: 0.8;
+            }
+        }
+
+        /* Núcleo brillante para que el destello "se lea" incluso en pantallas con menos contraste */
+        .magic-glow span {
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255,255,255,0.75) 0%, rgba(255, 240, 200, 0.25) 28%, transparent 60%);
+            filter: blur(6px);
+            opacity: 0;
+            transition: opacity 0.45s ease;
+            pointer-events: none;
+        }
+
+        .magic-glow::before {
+            content: '';
+            position: absolute;
+            left: 50%;
+            bottom: 12px;
+            width: 240px;
+            height: 300px;
+            transform: translateX(-50%) scaleY(0.2);
+            transform-origin: bottom center;
+            opacity: 0;
+            background: linear-gradient(to top, rgba(255, 242, 214, 0.70) 0%, rgba(255, 226, 153, 0.32) 40%, rgba(255, 226, 153, 0) 100%);
+            /* Evita triángulo duro (falla del medio) */
+            clip-path: none;
+            filter: blur(12px);
+            transition: transform 0.8s ease-out, opacity 0.6s ease-out;
+            pointer-events: none;
+        }
+
+        /* Este pseudo-elemento era la principal fuente del triángulo; lo apagamos definitivamente. */
+        .magic-glow::before { display: none; }
+
+        .magic-glow::after {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            width: 170px;
+            height: 170px;
+            transform: translate(-50%, -50%) scale(0.8);
+            border-radius: 50%;
+            border: 1px solid rgba(255, 229, 160, 0.45);
+            box-shadow: 0 0 24px rgba(255, 223, 128, 0.32);
+            opacity: 0;
+            transition: transform 0.65s ease, opacity 0.65s ease;
+            pointer-events: none;
+        }
+
+        /* Animación pulso circular suave cuando está cerrado */
+        @keyframes pulse-glow-circle {
+            0% { transform: translate(-50%, -50%) translateZ(1.5px) scale(0.8); opacity: 0.5; }
+            100% { transform: translate(-50%, -50%) translateZ(1.5px) scale(1.1); opacity: 0.8; }
+        }
+
+        /* Burst (al click): bloom rápido + halo amplio + destello */
+        @keyframes magic-bloom {
+            0%   { transform: translate(-50%, -56%) translateZ(1.5px) scale(0.9);  filter: blur(14px) brightness(1);   opacity: 0.45; }
+            22%  { transform: translate(-50%, -56%) translateZ(1.5px) scale(1.65); filter: blur(18px) brightness(1.25); opacity: 1; }
+            58%  { transform: translate(-50%, -56%) translateZ(1.5px) scale(1.28); filter: blur(10px) brightness(1.15); opacity: 0.95; }
+            100% { transform: translate(-50%, -56%) translateZ(1.5px) scale(1.15); filter: blur(8px)  brightness(1.05); opacity: 0.95; }
+        }
+
+        @keyframes magic-flash {
+            0% { opacity: 0; }
+            18% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+
+        /* Estado abierto: haz de luz controlado y elegante */
+        .envelope.open .magic-glow {
+            top: 56%;
+            transform: translate(-50%, -56%) translateZ(1.5px) scale(1.15);
+            filter: blur(8px);
+            animation: none;
+            opacity: 0;
+        }
+
+        /* Mejor iluminación al click (durante la transición): más bloom y destello */
+        .envelope.open.is-opening .magic-glow {
+            animation: magic-bloom 1.25s cubic-bezier(0.2, 0.85, 0.2, 1) both;
+        }
+
+        .envelope.open .magic-glow span {
+            opacity: 1;
+        }
+
+        .envelope.open.is-opening .magic-glow span {
+            animation: magic-flash 0.65s ease-out both;
+        }
+
+        .envelope.open .magic-glow::before {
+            transform: translateX(-50%) scaleY(1.15);
+            opacity: 0.92;
+        }
+
+        .envelope.open.is-opening .magic-glow::before {
+            opacity: 1;
+            filter: blur(10px);
+        }
+
+        .envelope.open .magic-glow::after {
+            transform: translate(-50%, -50%) scale(1.45);
+            opacity: 0.85;
+        }
+
+        .envelope.open.is-opening .magic-glow::after {
+            opacity: 1;
+            box-shadow: 0 0 30px rgba(255, 235, 175, 0.55), 0 0 70px rgba(255, 214, 120, 0.25);
+        }
+
+
+        .particles {
+            position: absolute;
+            inset: 0;
+            z-index: 3;
+            transform: translateZ(2.5px); /* Flotando sobre la carta */
+            pointer-events: none;
+        }
+
+        .particle {
+            position: absolute;
+            bottom: 0;
+            width: var(--s, 4px);
+            height: var(--s, 4px);
+            background: radial-gradient(circle, rgba(255,255,255,1) 0%, rgba(255, 230, 170, 0.75) 45%, rgba(255, 215, 130, 0) 72%);
+            border-radius: 50%;
+            box-shadow: 0 0 10px rgba(255, 215, 130, 0.95), 0 0 18px rgba(255, 215, 130, 0.55);
+            opacity: 0;
+            left: var(--x);
+            animation: rise-particles 2.8s infinite ease-in-out;
+            animation-delay: var(--d);
+        }
+
+        /* Un poco más de variación visual (sin tocar HTML): desenfoque y brillo por partícula */
+        .particle {
+            filter: blur(var(--particle-blur));
+            transform: translateZ(0);
+            will-change: transform, opacity;
+        }
+
+        /* Cuando el sobre se abra, que las partículas se vayan mucho más lejos y dispersas */
+        .envelope.open .particles {
+            transform: translateZ(50px); /* Traer partículas al frente junto con la carta */
+            overflow: visible; /* Permitir que salgan visualmente */
+        }
+
+        .envelope.open .particle {
+            animation: explode-particles 1.9s ease-out forwards;
+            animation-delay: var(--d);
+        }
+
+        /* Durante el "click" hacemos el estallido más intenso y rápido */
+        .envelope.open.is-opening .particle {
+            animation-duration: 1.55s;
+        }
+
+        @keyframes rise-particles {
+            0% { transform: translateY(0) scale(0); opacity: 0; }
+            20% { opacity: 1; transform: translateY(-26px) scale(1); }
+            80% { opacity: 0.8; }
+            100% { transform: translateY(-170px) scale(0.1); opacity: 0; }
+        }
+
+        @keyframes explode-particles {
+             0% { transform: translate(0, 0) scale(0.35); opacity: 0; }
+             15% { opacity: 1; transform: translate(calc(var(--x) - 52%), -70px) scale(1.05); }
+             100% { transform: translate(calc((var(--x) - 50%) * 3.0), -560px) scale(0.12); opacity: 0; }
+        }
+
+        .envelope.open {
+            animation: none;
+            transition: transform 0.8s ease;
+            transform: scale(1);
+        }
+
+        .envelope:hover {
+            animation: shake-hard 0.5s ease-in-out infinite;
+            box-shadow: 0 15px 40px rgba(212, 175, 55, 0.2);
+        }
+
+        /* Al abrir (click), dejar de temblar aunque el mouse siga encima */
+        .envelope.open,
+        .envelope.open:hover {
+            animation: none !important;
+            transform: translateY(0) rotate(0deg) !important;
+        }
+
+        /* FIX: Ocultar todo el contenido del sobre cuando pasa a full-screen */
+        .envelope.full-screen > * {
+            opacity: 0 !important;
+            transition: opacity 0.2s linear !important;
+            pointer-events: none !important;
+        }
+
+        /* Ajuste de profundidades Z para el pila 3D */
+        .front { transform: translateZ(4px); }
+        .side { transform: translateZ(3px); }
+        .letter { transform: translateZ(2px); } /* Carta en el medio */
+        .back { transform: translateZ(1px); }   /* Fondo detrás */
+        .flap { transform: translateZ(5px); }   /* Solapa encima de todo al estar cerrada */
+
+        .back {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #152040;
+            z-index: 1;
+        }
+
+        .side {
+            position: absolute;
+            top: 0;
+            width: 0;
+            height: 0;
+            z-index: 3;
+        }
+
+        .side.left {
+            left: 0;
+            border-left: 175px solid #1a264a;
+            border-top: 120px solid transparent;
+            border-bottom: 120px solid transparent;
+        }
+
+        .side.right {
+            right: 0;
+            border-right: 175px solid #1a264a;
+            border-top: 120px solid transparent;
+            border-bottom: 120px solid transparent;
+        }
+
+        .front {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 0;
+            border-left: 175px solid transparent;
+            border-right: 175px solid transparent;
+            border-bottom: 140px solid #1f2e5a;
+            z-index: 4;
+        }
+
+        .front::after {
+             content: '';
+             position: absolute;
+             left: -175px;
+             bottom: -140px;
+             width: 0;
+             height: 0;
+             border-left: 175px solid transparent;
+             border-right: 175px solid transparent;
+             border-bottom: 140px solid rgba(212, 175, 55, 0.1); /* Brillo dorado sutil */
+             pointer-events: none;
+        }
+
+        .flap {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 0;
+            height: 0;
+            border-left: 175px solid transparent;
+            border-right: 175px solid transparent;
+            border-top: 130px solid #2a4a7d;
+            transform-origin: top;
+            transition: transform 0.6s ease-in-out, z-index 0.6s steps(1);
+            z-index: 5;
+            filter: drop-shadow(0 2px 5px rgba(0,0,0,0.3));
+        }
+
+        .envelope.open .flap {
+            transform: rotateX(180deg) translateZ(1px); /* Mantener un poco de Z al abrir */
+            z-index: 0;
+        }
+
+        /* Cuando la carta se expande a pantalla, el borde inferior del sobre no debe quedar por encima */
+        .envelope.full-screen .front,
+        .envelope.full-screen .side,
+        .envelope.full-screen .back,
+        .envelope.full-screen .flap {
+            z-index: 0 !important;
+        }
+
+        .letter {
+            position: absolute;
+            top: 10px;
+            left: 15px;
+            width: 320px;
+            height: 220px;
+            box-sizing: border-box;
+            background: linear-gradient(135deg, #0d1b2a 0%, #1a0f3a 100%);
+            z-index: 2;
+            transform-origin: center 30%;
+            transition: transform 0.8s ease-in-out 0.6s, z-index 0.1s steps(1) 1s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            overflow: visible;
+            border: 2px solid var(--gold);
+        }
+
+        /* ===== FULLSCREEN LETTER OVERLAY (estabiliza el zoom: sin estirarse ni correrse) ===== */
+        .fullscreen-letter {
+            position: fixed;
+            inset: 0;
+            display: grid;
+            place-items: center;
+            z-index: 6500;
+            pointer-events: none;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.35s ease, visibility 0.35s ease;
+            transform: none;
+        }
+
+        /* Visible cuando JS lo activa (mientras el welcome overlay esté visible) */
+        #welcome-overlay:not(.opened) .fullscreen-letter.is-visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* Seguridad: si el overlay se abrió/cerró, nunca mostrar fullscreen-letter */
+        #welcome-overlay.opened .fullscreen-letter {
+            opacity: 0 !important;
+            visibility: hidden !important;
+        }
+
+        .fullscreen-letter .letter {
+            position: relative;
+            top: auto;
+            left: auto;
+            transform: translateZ(0) scale(0.96);
+            transform-origin: center;
+            will-change: transform;
+        }
+
+        .fullscreen-letter.is-visible .letter {
+            transform: scale(3.2);
+            transition: transform 1.35s ease-in-out;
+        }
+
+        /* El contenedor se anima desde la posición real de la carta hacia el centro */
+        .fullscreen-letter {
+            --fs-start-x: 0px;
+            --fs-start-y: 0px;
+            --fs-start-scale: 1;
+        }
+
+        .fullscreen-letter.is-visible {
+            transform: translate(var(--fs-start-x), var(--fs-start-y)) scale(var(--fs-start-scale));
+        }
+
+        .fullscreen-letter.is-zooming {
+            transform: translate(0px, 0px) scale(1);
+            transition: transform 1.35s ease-in-out;
+        }
+
+        @media (max-width: 600px) {
+            .fullscreen-letter.is-visible .letter { transform: scale(2.4); }
+        }
+
+        @media (min-width: 1200px) {
+            .fullscreen-letter.is-visible .letter { transform: scale(3.6); }
+        }
+
+        /* En el overlay fullscreen, el contenido debe ser visible siempre */
+        .fullscreen-letter .letter-content {
+            opacity: 1 !important;
+            transform: none !important;
+            transition: none !important;
+        }
+
+        .letter::before {
+             content: '';
+             position: absolute;
+             top: 0;
+             left: 0;
+             width: 100%;
+             height: 100%;
+             background:
+                radial-gradient(circle at 20% 15%, rgba(107, 45, 122, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 80% 85%, rgba(13, 27, 42, 0.2) 0%, transparent 40%);
+             pointer-events: none;
+        }
+
+        .letter-content {
+            position: relative;
+            text-align: center;
+            color: var(--text-light);
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.5s ease 1s, transform 0.5s ease 1s;
+            z-index: 2;
+        }
+
+        .envelope.open .letter-content {
+             opacity: 1;
+             transform: translateY(0);
+        }
+
+        .letter h2 {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 1.2rem;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            color: var(--text-light);
+            margin-bottom: 5px;
+            text-shadow: 0 2px 5px rgba(0,0,0,0.3);
+            font-weight: 500;
+        }
+
+        .letter h3 {
+             font-family: 'Dancing Script', cursive;
+             font-size: 3.5rem;
+             margin-bottom: 15px;
+             color: var(--gold-light);
+             font-weight: 700;
+             line-height: 1.1;
+        }
+
+        .letter p {
+             font-size: 0.85rem;
+             color: var(--silver);
+             margin-bottom: 5px;
+             font-weight: 300;
+             letter-spacing: 0.5px;
+        }
+
+        .letter .date {
+             font-weight: 600;
+             color: var(--gold);
+             margin-top: 15px;
+             font-size: 1.1rem;
+             letter-spacing: 1px;
+             text-transform: uppercase;
+             border-top: 1px solid rgba(212, 175, 55, 0.3);
+             border-bottom: 1px solid rgba(212, 175, 55, 0.3);
+             padding: 5px 0;
+        }
+
+        /* Estado intermedio: Carta fuera pero sin zoom excesivo */
+        .envelope.open .letter {
+            transform: translateY(-220px) translateZ(2px);
+            transition: transform 0.8s ease-in-out 0.6s; /* Espera a solapa */
+        }
+
+        /* Levitación durante la pausa antes del zoom */
+        @keyframes letter-hovering {
+            0%, 100% { transform: translateY(-220px) translateZ(2px) rotate(-0.35deg); }
+            50% { transform: translateY(-232px) translateZ(2px) rotate(0.35deg); }
+        }
+
+        .envelope.open.is-hovering .letter {
+            animation: letter-hovering 2.2s ease-in-out infinite;
+        }
+
+        /* Clase para la animación final de pantalla completa */
+        .envelope.full-screen .letter {
+              /* Ocultar la carta original: la versión full-screen se renderiza en .fullscreen-letter */
+              opacity: 0;
+        }
+
+        /* Asegurar centrado perfecto durante la transición (evita micro-shifts por rendering) */
+        .envelope.full-screen .letter {
+            margin: 0;
+            will-change: transform;
+        }
+
+        /* Ajustar tipografía/espaciado cuando la carta está en grande */
+        .envelope.full-screen .letter h3 { font-size: clamp(2.8rem, 6vw, 4.2rem); }
+        .envelope.full-screen .letter p { font-size: clamp(0.95rem, 2.2vw, 1.2rem); }
+        .envelope.full-screen .letter .date { font-size: clamp(1.1rem, 2.6vw, 1.6rem); }
+
+        /* ===== LUZ INTERNA MEJORADA (sale desde dentro del sobre) ===== */
+        .inner-glow {
+            position: absolute;
+            left: 50%;
+            bottom: 10px;
+            width: 240px;
+            height: 160px;
+            transform: translateX(-50%) translateZ(1px);
+            pointer-events: none;
+            z-index: 3;
+            opacity: 0;
+            filter: blur(8px);
+            background: radial-gradient(ellipse at 50% 90%, rgba(255, 245, 200, 0.95) 0%, rgba(255, 214, 120, 0.38) 38%, rgba(255, 214, 120, 0) 72%);
+            transition: opacity 0.55s ease-out;
+            mix-blend-mode: screen;
+        }
+
+        /* Nota: no recortamos globalmente (rompe el aspecto de glow circular).
+           El recorte se aplica SOLO donde debe haber "haz" (light-rays) y al glow interno. */
+
+        .inner-glow::after {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            width: 260px;
+            height: 180px;
+            transform: translate(-50%, -50%) scale(0.9);
+            border-radius: 50%;
+            box-shadow: 0 0 42px rgba(255, 227, 150, 0.55), 0 0 90px rgba(255, 205, 110, 0.18);
+            opacity: 0;
+            transition: opacity 0.55s ease-out, transform 0.55s ease-out;
+            pointer-events: none;
+        }
+
+        /* Fuente del fallo circular: el halo extra se veía como "bola" durante la subida */
+        .inner-glow::after {
+            display: none;
+        }
+
+        .light-rays {
+            position: absolute;
+            left: 50%;
+            bottom: 10px;
+            width: 300px;
+            height: 520px;
+            transform: translateX(-50%) translateZ(1px);
+            pointer-events: none;
+            z-index: 3;
+            opacity: 0;
+            filter: blur(10px);
+            /* Haz más legible: combinamos un abanico (conic) + un degradado vertical */
+            /* Menos "destellos": reducimos el conic-gradient (bandas) y dejamos el haz más suave */
+            background:
+                linear-gradient(to top, rgba(255, 244, 214, 0.52) 0%, rgba(255, 226, 153, 0.22) 48%, rgba(255, 226, 153, 0.0) 100%),
+                radial-gradient(ellipse at 50% 100%, rgba(255, 235, 175, 0.32) 0%, rgba(255, 225, 150, 0.18) 38%, rgba(255, 225, 150, 0) 78%);
+            /*
+              Evitar "triángulos" visibles: el clip-path genera bordes duros.
+              Usamos máscaras suaves (fade) para mantener la forma sin cortes.
+            */
+            /* Máscara con fade lateral fuerte para evitar "triángulos"/bandas en los bordes */
+            -webkit-mask-image:
+                linear-gradient(to top, rgba(0,0,0,0) 0%, rgba(0,0,0,0.55) 16%, rgba(0,0,0,1) 54%),
+                linear-gradient(to right, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 26%, rgba(0,0,0,1) 74%, rgba(0,0,0,0) 100%);
+            mask-image:
+                linear-gradient(to top, rgba(0,0,0,0) 0%, rgba(0,0,0,0.55) 16%, rgba(0,0,0,1) 54%),
+                linear-gradient(to right, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 26%, rgba(0,0,0,1) 74%, rgba(0,0,0,0) 100%);
+            transform-origin: bottom center;
+        }
+
+        @keyframes rays-idle {
+            0%, 100% { opacity: 0.35; transform: translateX(-50%) translateZ(1px) scaleX(1) scaleY(1); filter: blur(9px) brightness(1.03); }
+            50% { opacity: 0.55; transform: translateX(-50%) translateZ(1px) scaleX(1.02) scaleY(1.05); filter: blur(8px) brightness(1.08); }
+        }
+
+        /* Durante el click: la luz se siente más "saliendo de adentro" (más abajo y más concentrada) */
+        .envelope.open.is-opening .inner-glow {
+            filter: blur(7px) brightness(1.15);
+            opacity: 1;
+        }
+
+        .envelope.open.is-opening .light-rays {
+            opacity: 1;
+            bottom: 2px;
+            filter: blur(7px) brightness(1.12);
+        }
+
+        /* En el burst, bajamos un poco el glow circular para que no parezca "una pelota" */
+        .envelope.open.is-opening .magic-glow {
+            opacity: 0.78;
+        }
+
+        /* Glow interno: sin clip-path duro (evita triángulos). Máscara suave. */
+        .inner-glow {
+            -webkit-mask-image: linear-gradient(to top, rgba(0,0,0,0) 0%, rgba(0,0,0,0.35) 22%, rgba(0,0,0,1) 58%);
+            mask-image: linear-gradient(to top, rgba(0,0,0,0) 0%, rgba(0,0,0,0.35) 22%, rgba(0,0,0,1) 58%);
+        }
+
+        /* Evitar que el glow interno se lea como "rectángulo": lo suavizamos con máscara elíptica */
+        .inner-glow {
+            -webkit-mask-image:
+                radial-gradient(ellipse at 50% 88%, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 52%, rgba(0,0,0,0) 82%),
+                linear-gradient(to top, rgba(0,0,0,0) 0%, rgba(0,0,0,0.35) 22%, rgba(0,0,0,1) 58%);
+            mask-image:
+                radial-gradient(ellipse at 50% 88%, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 52%, rgba(0,0,0,0) 82%),
+                linear-gradient(to top, rgba(0,0,0,0) 0%, rgba(0,0,0,0.35) 22%, rgba(0,0,0,1) 58%);
+        }
+
+        @keyframes rays-burst {
+            /* Ángulo mayor: ensanchamos el abanico con scaleX */
+            0%   { opacity: 0; transform: translateX(-50%) translateZ(1px) scaleX(1.03) scaleY(0.22); }
+            30%  { opacity: 1; transform: translateX(-50%) translateZ(1px) scaleX(1.08) scaleY(1.18); }
+            /* No terminar en 0: así no hay "apagón" antes del estado idle */
+            100% { opacity: 0.42; transform: translateX(-50%) translateZ(1px) scaleX(1.0) scaleY(1.12); }
+        }
+
+        /* Fallback si conic-gradient no existe: dejamos sólo el degradado vertical */
+        @supports not (background: conic-gradient(from 0deg at 50% 50%, #000, #fff)) {
+            .light-rays {
+                background: linear-gradient(to top, rgba(255, 244, 214, 0.58) 0%, rgba(255, 226, 153, 0.22) 45%, rgba(255, 226, 153, 0.0) 100%);
+            }
+        }
+
+        @keyframes glow-pop {
+            0% { transform: translateX(-50%) translateZ(1px) scale(0.92); }
+            45% { transform: translateX(-50%) translateZ(1px) scale(1.06); }
+            100% { transform: translateX(-50%) translateZ(1px) scale(1); }
+        }
+
+        .envelope.open .inner-glow {
+            opacity: 1;
+            animation: glow-pop 0.9s ease-out;
+        }
+
+        .envelope.open .inner-glow::after {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        /* Al abrir: burst y luego queda una luz estable (no desaparece) */
+        .envelope.open .light-rays {
+            opacity: 1;
+            animation: rays-burst 1.05s ease-out both, rays-idle 2.6s ease-in-out 1.05s infinite;
+        }
+
+        /* Más lectura de "luz" al click, sin quedar permanente */
+        .envelope.open.is-opening .light-rays {
+            filter: blur(8px);
+        }
+
+        /* Cuando la carta ya se fue a full-screen: la luz no debe seguir "saliendo del sobre" */
+        .envelope.full-screen .inner-glow { opacity: 0; }
+        .envelope.full-screen .light-rays { opacity: 0; animation: none; }
+
+        /* Importante: en full-screen no recortar el sobre, porque recorta la carta.
+           El recorte del brillo se hace en sus capas (inner-glow/light-rays/magic-glow). */
+        .envelope.full-screen {
+            overflow: visible;
+        }
+
+        /* Sin recorte triangular en full-screen: se notaba como “triángulos”. */
+        .envelope.full-screen .inner-glow,
+        .envelope.full-screen .light-rays,
+        .envelope.full-screen .magic-glow {
+            overflow: visible;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .magic-glow,
+            .particle,
+            .envelope.open.is-opening .magic-glow,
+            .envelope.open .light-rays {
+                animation: none !important;
+                transition: none !important;
+            }
+
+            .envelope.open.is-hovering .letter {
+                animation: none !important;
+            }
+        }
+
+
+        .tap-instruction {
+            color: var(--silver);
+            margin-top: 40px;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 0.9rem;
+            letter-spacing: 2px;
+            opacity: 0.7;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+
+        /* ===== MAIN CONTENT ===== */
+        #main-content {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            visibility: hidden;
+            opacity: 0;
+            transition: opacity 1s ease-in, visibility 1s ease-in;
+        }
+
+        #main-content.show {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 40px 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at 50% 0%, rgba(217, 70, 166, 0.1) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 1;
+            animation: fadeInUp 1.2s ease-out;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(40px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .hero h3 {
+            font-family: 'Montserrat', sans-serif;
+            letter-spacing: 6px;
+            color: var(--silver);
+            text-transform: uppercase;
+            font-size: clamp(0.8rem, 2vw, 1.1rem);
+            margin: 0 0 15px 0;
+            font-weight: 600;
+            opacity: 0.85;
+        }
+
+        .hero h1 {
+            font-family: 'Dancing Script', cursive;
+            color: var(--gold-light);
+            font-size: clamp(4rem, 12vw, 6.5rem);
+            margin: 0;
+            text-shadow:
+                0 0 10px rgba(212, 175, 55, 0.5),
+                0 0 20px rgba(212, 175, 55, 0.3),
+                0 0 30px rgba(217, 70, 166, 0.2);
+            line-height: 1;
+            font-weight: 700;
+            letter-spacing: 3px;
+        }
+
+        .hero p {
+            margin-top: 30px;
+            font-style: italic;
+            font-size: 1rem;
+            color: var(--silver);
+            line-height: 1.8;
+            max-width: 600px;
+            font-weight: 300;
+            letter-spacing: 0.5px;
+        }
+
+        .decorative-line {
+            width: 80px;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--gold), transparent);
+            margin: 25px auto;
+        }
+
+        .photo-placeholder {
+            width: 90%;
+            max-width: 700px;
+            height: 450px;
+            background: linear-gradient(135deg, rgba(26, 15, 58, 0.6), rgba(13, 27, 42, 0.6));
+            margin: 80px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            border: 2px solid rgba(212, 175, 55, 0.2);
+            border-radius: 12px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+            animation: photoFadeIn 0.8s ease-out;
+        }
+
+        @keyframes photoFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .photo-placeholder::after {
+            content: 'ESPACIO PARA TU FOTO';
+            color: rgba(212, 175, 55, 0.25);
+            font-size: 0.9rem;
+            letter-spacing: 5px;
+            text-align: center;
+            font-weight: 500;
+            position: absolute;
+        }
+
+        .photo-placeholder:nth-child(odd) {
+            transform: rotate(-1.5deg);
+        }
+
+        .photo-placeholder:nth-child(even) {
+            transform: rotate(1.5deg);
+        }
+
+        .info-section {
+            padding: 60px 20px;
+            text-align: center;
+            max-width: 800px;
+            margin: 0 auto;
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        .info-section h2 {
+            font-family: 'Dancing Script', cursive;
+            color: var(--gold-light);
+            font-size: clamp(2rem, 7vw, 3.2rem);
+            margin-bottom: 30px;
+            text-shadow: 0 2px 15px rgba(212, 175, 55, 0.3);
+            font-weight: 700;
+            letter-spacing: 2px;
+        }
+
+        .info-section p {
+            color: var(--silver);
+            line-height: 1.8;
+            margin: 15px 0;
+            font-size: 0.95rem;
+            font-weight: 300;
+        }
+
+        .info-section strong {
+            color: var(--gold);
+            font-weight: 600;
+        }
+
+        .countdown {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 35px;
+            flex-wrap: wrap;
+        }
+
+        .time-box {
+            background: linear-gradient(135deg, rgba(212, 175, 55, 0.08), rgba(217, 70, 166, 0.08));
+            padding: 20px 15px;
+            border-radius: 15px;
+            min-width: 85px;
+            border: 2px solid rgba(212, 175, 55, 0.3);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .time-box:hover {
+            transform: translateY(-5px);
+            border-color: var(--gold);
+            box-shadow: 0 12px 30px rgba(212, 175, 55, 0.2);
+        }
+
+        .time-box span {
+            display: block;
+            font-size: clamp(1.8rem, 5vw, 2.8rem);
+            color: var(--gold);
+            font-family: 'Playfair Display', serif;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .time-box small {
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            color: var(--silver);
+            letter-spacing: 2px;
+            font-weight: 600;
+        }
+
+        .map-container {
+            margin-top: 30px;
+            border-radius: 15px;
+            overflow: hidden;
+            border: 2px solid rgba(212, 175, 55, 0.2);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(10px);
+        }
+
+        .map-container iframe {
+            border: none;
+            display: block;
+            width: 100%;
+        }
+
+        form {
+            max-width: 500px;
+            margin: 0 auto;
+            text-align: left;
+            padding: 30px;
+            background: rgba(26, 15, 58, 0.4);
+            border-radius: 15px;
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            backdrop-filter: blur(10px);
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 12px;
+            font-size: 0.8rem;
+            letter-spacing: 2px;
+            color: var(--gold);
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        input, textarea, select {
+            width: 100%;
+            padding: 14px 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1.5px solid rgba(212, 175, 55, 0.2);
+            color: white;
+            border-radius: 10px;
+            font-family: 'Montserrat', sans-serif;
+            box-sizing: border-box;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+        }
+
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: var(--gold);
+            background: rgba(255, 255, 255, 0.08);
+            box-shadow: 0 0 15px rgba(212, 175, 55, 0.2);
+        }
+
+        input::placeholder {
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        .btn-submit {
+            background: linear-gradient(135deg, var(--gold) 0%, var(--gold-light) 100%);
+            color: #0a0e27;
+            border: none;
+            padding: 16px 32px;
+            width: 100%;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            cursor: pointer;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+            text-align: center;
+            display: block;
+            text-decoration: none;
+            font-size: 0.9rem;
+            box-shadow: 0 8px 20px rgba(212, 175, 55, 0.3);
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 30px rgba(212, 175, 55, 0.5);
+            background: linear-gradient(135deg, var(--gold-light) 0%, var(--gold) 100%);
+        }
+
+        .btn-submit:active {
+            transform: translateY(-1px);
+        }
+
+        .btn-small {
+            padding: 12px 24px;
+            font-size: 0.8rem;
+            width: auto;
+            display: inline-block;
+            margin-top: 20px;
+        }
+
+        .gift-box {
+            background: linear-gradient(135deg, rgba(212, 175, 55, 0.08), rgba(217, 70, 166, 0.08));
+            padding: 40px;
+            border-radius: 15px;
+            border: 2px solid rgba(212, 175, 55, 0.3);
+            display: inline-block;
+            font-family: 'Montserrat', sans-serif;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+        }
+
+        .gift-box p {
+            margin: 10px 0;
+            color: var(--silver);
+            font-size: 0.95rem;
+        }
+
+        .gift-box strong {
+            color: var(--gold);
+        }
+
+        .alias {
+            color: var(--gold-light);
+            display: block;
+            margin-top: 15px;
+            font-size: 1.1rem;
+            letter-spacing: 2px;
+            font-weight: 700;
+        }
+
+        footer {
+            padding: 60px 20px;
+            text-align: center;
+            color: var(--gold-light);
+            font-family: 'Dancing Script', cursive;
+            font-size: clamp(2rem, 6vw, 3rem);
+            font-weight: 700;
+            text-shadow: 0 2px 15px rgba(212, 175, 55, 0.3);
+            letter-spacing: 2px;
+        }
+
+        @media (max-width: 768px) {
+            .envelope {
+                width: 300px;
+                height: 200px;
+            }
+
+            .front {
+                border-left-width: 150px;
+                border-right-width: 150px;
+                border-bottom-width: 120px;
+            }
+
+            .front::after {
+                left: -150px;
+                bottom: -120px;
+                border-left-width: 150px;
+                border-right: 150px;
+                border-bottom-width: 120px;
+            }
+
+            .flap {
+                border-left-width: 150px;
+                border-right-width: 150px;
+                border-top-width: 110px;
+            }
+
+            .letter {
+                width: 270px;
+                height: 180px;
+                top: 10px;
+                left: 15px;
+            }
+
+            .photo-placeholder {
+                height: 350px;
+            }
+
+            .countdown {
+                gap: 10px;
+            }
+
+            .time-box {
+                min-width: 70px;
+                padding: 15px 10px;
+            }
+
+            form {
+                padding: 20px;
+            }
+        }
+
+        .fade-in-on-scroll {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s ease-out;
+        }
+
+        .fade-in-on-scroll.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .envelope,
+            .flap,
+            .letter,
+            #welcome-overlay,
+            #main-content {
+                animation: none !important;
+                transition: none !important;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div id="welcome-overlay">
+    <div class="invitation-prompt">
+        Tienes una invitación especial<br>
+        <span style="display: inline-block; margin-top: 10px; font-size: 0.9em;">Presiona la carta para abrir</span>
+    </div>
+
+    <div class="envelope-wrapper">
+        <div class="envelope" role="button" tabindex="0" aria-label="Abrir invitacion">
+            <div class="back"></div>
+            <div class="inner-glow"></div>
+            <div class="light-rays"></div>
+            <div class="magic-glow"><span></span></div>
+            <div class="particles">
+                <div class="particle" style="--x: 10%; --y: 100%; --d: 0s;"></div>
+                <div class="particle" style="--x: 30%; --y: 100%; --d: 1s;"></div>
+                <div class="particle" style="--x: 60%; --y: 100%; --d: 2.5s;"></div>
+                <div class="particle" style="--x: 90%; --y: 100%; --d: 1.5s;"></div>
+                <div class="particle" style="--x: 45%; --y: 100%; --d: 0.5s;"></div>
+                <div class="particle" style="--x: 20%; --y: 100%; --d: 3s;"></div>
+                <div class="particle" style="--x: 75%; --y: 100%; --d: 2s;"></div>
+                <div class="particle" style="--x: 55%; --y: 100%; --d: 4s;"></div>
+                <div class="particle" style="--x: 5%; --y: 100%; --d: 3.5s;"></div>
+                <div class="particle" style="--x: 85%; --y: 100%; --d: 0.2s;"></div>
+                <div class="particle" style="--x: 35%; --y: 100%; --d: 1.2s;"></div>
+                <div class="particle" style="--x: 65%; --y: 100%; --d: 2.8s;"></div>
+                <div class="particle" style="--x: 15%; --y: 100%; --d: 4.5s;"></div>
+                <div class="particle" style="--x: 95%; --y: 100%; --d: 1.8s;"></div>
+                <div class="particle" style="--x: 50%; --y: 100%; --d: 0.8s;"></div>
+                <!-- extra partículas -->
+                <div class="particle" style="--x: 12%; --d: 0.3s; --s: 3px;"></div>
+                <div class="particle" style="--x: 18%; --d: 1.6s; --s: 5px;"></div>
+                <div class="particle" style="--x: 24%; --d: 2.1s; --s: 3px;"></div>
+                <div class="particle" style="--x: 28%; --d: 0.9s; --s: 4px;"></div>
+                <div class="particle" style="--x: 38%; --d: 2.9s; --s: 3px;"></div>
+                <div class="particle" style="--x: 42%; --d: 1.1s; --s: 5px;"></div>
+                <div class="particle" style="--x: 48%; --d: 3.3s; --s: 3px;"></div>
+                <div class="particle" style="--x: 58%; --d: 0.6s; --s: 4px;"></div>
+                <div class="particle" style="--x: 62%; --d: 1.9s; --s: 3px;"></div>
+                <div class="particle" style="--x: 68%; --d: 3.9s; --s: 5px;"></div>
+                <div class="particle" style="--x: 72%; --d: 2.4s; --s: 3px;"></div>
+                <div class="particle" style="--x: 78%; --d: 1.4s; --s: 4px;"></div>
+                <div class="particle" style="--x: 82%; --d: 2.7s; --s: 3px;"></div>
+                <div class="particle" style="--x: 88%; --d: 0.1s; --s: 5px;"></div>
+                <div class="particle" style="--x: 92%; --d: 3.1s; --s: 3px;"></div>
+            </div>
+            <div class="letter">
+                <div class="letter-content">
+                    <h2>Mis 15</h2>
+                    <h3>Martu</h3>
+                    <p>Una noche mágica nos espera.</p>
+                    <p class="date">20 de Diciembre</p>
+                </div>
+            </div>
+            <div class="side left"></div>
+            <div class="side right"></div>
+            <div class="front"></div>
+            <div class="flap"></div>
+        </div>
+        <div class="tap-instruction">Toca para abrir</div>
+    </div>
+
+    <!-- Overlay de carta a pantalla completa (se completa por JS clonando el contenido) -->
+    <div class="fullscreen-letter" aria-hidden="true">
+        <div class="letter" role="presentation">
+            <div class="letter-content"></div>
+        </div>
+    </div>
+</div>
+
+<div class="nebula-bg"></div>
+<div id="stars-container"></div>
+
+<main id="main-content">
+    <section class="hero">
+        <div class="hero-content">
+            <h3>Mis 15 Años</h3>
+            <h1>Martu</h1>
+            <div class="decorative-line"></div>
+            <p>
+                "Una noche mágica donde los sueños se hacen realidad bajo la luz de la luna.<br>
+                Te espero en mi día especial para celebrar juntos."
+            </p>
+        </div>
+    </section>
+
+    <div class="photo-placeholder"></div>
+
+    <section class="info-section fade-in-on-scroll">
+        <h2>Faltan</h2>
+        <div class="countdown">
+            <div class="time-box">
+                <span id="days">00</span>
+                <small>Días</small>
+            </div>
+            <div class="time-box">
+                <span id="hours">00</span>
+                <small>Hs</small>
+            </div>
+            <div class="time-box">
+                <span id="minutes">00</span>
+                <small>Min</small>
+            </div>
+            <div class="time-box">
+                <span id="seconds">00</span>
+                <small>Seg</small>
+            </div>
+        </div>
+    </section>
+
+    <div class="photo-placeholder"></div>
+
+    <section class="info-section fade-in-on-scroll">
+        <h2>La Fiesta</h2>
+        <p><strong>Salón:</strong> Espacio Estelar Events</p>
+        <p><strong>Dirección:</strong> Av. de la Luna 1234, Ciudad</p>
+        <p><strong>Horario:</strong> 21:30 hs</p>
+        <div class="map-container">
+            <iframe src="https://www.google.com/maps/embed?pb=!1m14!1m12!1m3!1d13100.000000000002!2d-56.1645!3d-34.9011!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!5e0!3m2!1ses!2suy!4v1600000000000!5m2!1ses!2suy" width="100%" height="300" style="border:0;" allowfullscreen="" loading="lazy"></iframe>
+        </div>
+        <a href="#" target="_blank" class="btn-submit btn-small">Cómo llegar</a>
+    </section>
+
+    <div class="photo-placeholder"></div>
+
+    <section class="info-section fade-in-on-scroll">
+        <h2>Dress Code</h2>
+        <p style="letter-spacing: 4px; color: var(--gold); font-weight: 600; font-size: 1.3rem; margin-bottom: 15px;">FORMAL ELEGANTE</p>
+        <p>Te espero con tu mejor gala para disfrutar de esta noche mágica.<br>
+        <span style="font-size: 0.85rem; opacity: 0.8;">Detalles que brillan como estrellas</span></p>
+    </section>
+
+    <div class="photo-placeholder"></div>
+
+    <section class="info-section fade-in-on-scroll">
+        <h2>Regalos</h2>
+        <div class="gift-box">
+            <p>Si deseas colaborar para hacer este día aún más especial:</p>
+            <p><strong>BROU - Caja de Ahorro $</strong></p>
+            <p><strong>Cuenta:</strong> 1234567-8</p>
+            <p><strong>Titular:</strong> Martina Ruiz</p>
+            <p class="alias">Alias: MARTU.15.RUIZ</p>
+        </div>
+    </section>
+
+    <div class="photo-placeholder"></div>
+
+    <section class="info-section fade-in-on-scroll">
+        <h2>Confirmación</h2>
+        <form onsubmit="handleFormSubmit(event)">
+            <div class="form-group">
+                <label for="nombre">Nombre y Apellido</label>
+                <input id="nombre" type="text" required placeholder="Tu nombre completo">
+            </div>
+            <div class="form-group">
+                <label for="asistentes">¿Cuántos asisten?</label>
+                <select id="asistentes" required>
+                    <option value="" disabled selected>Selecciona...</option>
+                    <option value="1">Solo yo</option>
+                    <option value="2">Yo + 1 acompañante</option>
+                    <option value="3">Yo + 2 acompañantes</option>
+                    <option value="4">Yo + 3 acompañantes</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="menu">Menú Especial / Alergias</label>
+                <textarea id="menu" rows="3" placeholder="Celíaco, vegetariano, vegano, alergias..."></textarea>
+            </div>
+            <button type="submit" class="btn-submit">Confirmar Asistencia</button>
+        </form>
+    </section>
+
+    <footer>Te espero para celebrar</footer>
+</main>
+
+<script>
+    // ===== APERTURA DE LA INVITACIÓN =====
+    function revealMainContent() {
+        document.getElementById('main-content').classList.add('show');
+        document.body.style.overflow = 'auto';
+        observeElements();
+    }
+
+    function syncFullscreenLetter() {
+        const fullscreen = document.querySelector('#welcome-overlay .fullscreen-letter');
+        const src = document.querySelector('#welcome-overlay .envelope .letter-content');
+        const dst = fullscreen?.querySelector('.letter-content');
+        if (!fullscreen || !src || !dst) return;
+
+        // Clonar el nodo completo para mantener clases/estados y evitar que quede vacío por timing.
+        const clone = src.cloneNode(true);
+        dst.replaceWith(clone);
+    }
+
+    function positionFullscreenLetterFromSource() {
+        const fullscreen = document.querySelector('#welcome-overlay .fullscreen-letter');
+        const srcLetter = document.querySelector('#welcome-overlay .envelope .letter');
+        const dstLetter = fullscreen?.querySelector('.letter');
+        if (!fullscreen || !srcLetter || !dstLetter) return;
+
+        const srcRect = srcLetter.getBoundingClientRect();
+        const dstRect = dstLetter.getBoundingClientRect();
+
+        // Centro del elemento fuente (en pantalla)
+        const srcCx = srcRect.left + srcRect.width / 2;
+        const srcCy = srcRect.top + srcRect.height / 2;
+
+        // Centro del destino (overlay centrado)
+        const dstCx = dstRect.left + dstRect.width / 2;
+        const dstCy = dstRect.top + dstRect.height / 2;
+
+        // Trasladar el overlay para que su carta coincida con la posición fuente
+        const dx = srcCx - dstCx;
+        const dy = srcCy - dstCy;
+
+        // Escala inicial para que el tamaño coincida (antes de animar al mega-zoom)
+        const scale = srcRect.width / Math.max(dstRect.width, 1);
+
+        fullscreen.style.setProperty('--fs-start-x', `${dx}px`);
+        fullscreen.style.setProperty('--fs-start-y', `${dy}px`);
+        fullscreen.style.setProperty('--fs-start-scale', `${scale}`);
+    }
+
+    function openInvitation() {
+        const envelope = document.querySelector('.envelope');
+        const overlay = document.getElementById('welcome-overlay');
+        const wrapper = document.querySelector('.envelope-wrapper'); // Contenedor para deshabilitar clicks
+
+        // Timing: primero sale la carta, luego se queda un momento "mostrándose" y recién ahí hace zoom.
+        const letterLiftMs = 1300;
+        const zoomPauseMs = 850;
+        const overlayFadeDelayMs = 900;
+        const fullscreenNode = document.querySelector('#welcome-overlay .fullscreen-letter');
+        const srcLetterNode = document.querySelector('#welcome-overlay .envelope .letter');
+
+        if (envelope.classList.contains('open')) return;
+
+        envelope.classList.add('open');
+
+        // Deshabilitar cualquier interacción futura inmediatamente
+        if (wrapper) wrapper.style.pointerEvents = 'none';
+
+        // Detener animación float inmediatamente para estabilizar la posición
+        envelope.style.animation = 'none';
+        envelope.style.transform = 'translateY(0) rotate(0deg)';
+
+        // Encender luz ambiente del overlay durante el zoom.
+        if (overlay) overlay.classList.add('overlay-lit');
+
+        // Estado temporal para intensificar la iluminación justo al click.
+        envelope.classList.add('is-opening');
+        setTimeout(() => {
+            envelope.classList.remove('is-opening');
+        }, 1400);
+
+        // Esperar transición de salida carta
+        // Activar levitación durante la pausa previa al zoom
+        setTimeout(() => {
+            envelope.classList.add('is-hovering');
+        }, Math.max(letterLiftMs - 120, 0));
+
+        setTimeout(() => {
+            envelope.classList.remove('is-hovering');
+
+            // ESTABILIZACIÓN CRITICA:
+            // Antes de medir coordenadas, congelar la carta original en su posición final exacta.
+            // Esto evita que animaciones residuales (hovering) o transiciones falseen el cálculo.
+            if (srcLetterNode) {
+                srcLetterNode.style.transition = 'none';
+                srcLetterNode.style.animation = 'none';
+                // Posición target definida en CSS (.envelope.open .letter)
+                srcLetterNode.style.transform = 'translateY(-220px) translateZ(2px)';
+                // Forzar reflow para que el navegador aplique esto YA
+                void srcLetterNode.offsetWidth;
+            }
+
+            // Preparar overlay full-screen antes de iniciar el zoom para evitar saltos de ancho/posición.
+            syncFullscreenLetter();
+            positionFullscreenLetterFromSource();
+
+            if (fullscreenNode) {
+                fullscreenNode.classList.add('is-visible');
+                fullscreenNode.classList.remove('is-zooming');
+            }
+
+            // Evitar que se vean dos cartas a la vez durante el zoom.
+            // La opacidad 0 en srcLetterNode oculta la original INSTANTANEAMENTE.
+            if (srcLetterNode) srcLetterNode.style.opacity = '0';
+
+            // Siguiente frame: animar hacia el centro (zoom)
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    if (fullscreenNode) fullscreenNode.classList.add('is-zooming');
+                });
+            });
+
+            envelope.classList.add('full-screen');
+
+            // Una vez expandida bastante, comenzar transición del overlay
+            setTimeout(() => {
+                overlay.classList.add('opened');
+                revealMainContent();
+            }, overlayFadeDelayMs);
+
+            // Limpieza: ocultar el fullscreen-letter cuando ya terminó el fade del overlay
+            setTimeout(() => {
+                if (fullscreenNode) fullscreenNode.classList.remove('is-visible');
+                // Restauramos estilos solo por higiene (aunque el overlay ya se fue)
+                if (srcLetterNode) {
+                    srcLetterNode.style.opacity = '';
+                    srcLetterNode.style.transition = '';
+                    srcLetterNode.style.transform = '';
+                    srcLetterNode.style.animation = '';
+                }
+            }, overlayFadeDelayMs + 900);
+        }, letterLiftMs + zoomPauseMs);
+    }
+
+    // ===== CREAR ESTRELLAS Y LUNAS =====
+    function createStars() {
+        const starContainer = document.getElementById('stars-container');
+        const svgNamespace = "http://www.w3.org/2000/svg";
+
+        for (let i = 0; i < 120; i++) {
+            const dot = document.createElement('div');
+            dot.className = 'star-dot';
+            const size = Math.random() * 2.5 + 0.5;
+            dot.style.width = size + 'px';
+            dot.style.height = size + 'px';
+            dot.style.top = Math.random() * 100 + '%';
+            dot.style.left = Math.random() * 100 + '%';
+            dot.style.opacity = Math.random() * 0.7 + 0.3;
+            dot.style.animationDelay = Math.random() * 3 + 's';
+            starContainer.appendChild(dot);
+        }
+
+        const moonConfigs = [
+            { top: 12, left: 80, size: 140 },
+            { top: 70, left: 10, size: 100 }
+        ];
+
+        moonConfigs.forEach(config => {
+            const moonSvg = document.createElementNS(svgNamespace, "svg");
+            moonSvg.setAttribute("viewBox", "0 0 100 100");
+            moonSvg.setAttribute("class", "moon-svg");
+            moonSvg.style.width = config.size + "px";
+            moonSvg.style.top = config.top + "%";
+            moonSvg.style.left = config.left + "%";
+
+            const defs = document.createElementNS(svgNamespace, "defs");
+            defs.innerHTML = `
+                <radialGradient id="moonGlow${config.size}" cx="35%" cy="35%">
+                    <stop offset="0%" stop-color="#fffef5" />
+                    <stop offset="30%" stop-color="#fffef5" />
+                    <stop offset="70%" stop-color="#f5e6c8" />
+                    <stop offset="100%" stop-color="#9d8c6e" />
+                </radialGradient>
+                <radialGradient id="moonShadow${config.size}" cx="70%" cy="70%">
+                    <stop offset="0%" stop-color="rgba(0, 0, 0, 0)" />
+                    <stop offset="100%" stop-color="rgba(0, 0, 0, 0.3)" />
+                </radialGradient>
+            `;
+            moonSvg.appendChild(defs);
+
+            const circle = document.createElementNS(svgNamespace, "circle");
+            circle.setAttribute("cx", "50");
+            circle.setAttribute("cy", "50");
+            circle.setAttribute("r", "45");
+            circle.setAttribute("fill", `url(#moonGlow${config.size})`);
+            moonSvg.appendChild(circle);
+
+            const shadowCircle = document.createElementNS(svgNamespace, "circle");
+            shadowCircle.setAttribute("cx", "50");
+            shadowCircle.setAttribute("cy", "50");
+            shadowCircle.setAttribute("r", "45");
+            shadowCircle.setAttribute("fill", `url(#moonShadow${config.size})`);
+            moonSvg.appendChild(shadowCircle);
+
+            const craterPositions = [
+                { x: 35, y: 35, r: 5 },
+                { x: 65, y: 40, r: 3.5 },
+                { x: 40, y: 60, r: 4 },
+                { x: 70, y: 65, r: 2.5 },
+                { x: 45, y: 25, r: 2.8 }
+            ];
+
+            craterPositions.forEach(crater => {
+                const craterOuter = document.createElementNS(svgNamespace, "circle");
+                craterOuter.setAttribute("cx", crater.x);
+                craterOuter.setAttribute("cy", crater.y);
+                craterOuter.setAttribute("r", crater.r);
+                craterOuter.setAttribute("fill", "rgba(0, 0, 0, 0.15)");
+                moonSvg.appendChild(craterOuter);
+
+                const craterInner = document.createElementNS(svgNamespace, "circle");
+                craterInner.setAttribute("cx", crater.x - crater.r * 0.3);
+                craterInner.setAttribute("cy", crater.y - crater.r * 0.3);
+                craterInner.setAttribute("r", crater.r * 0.4);
+                craterInner.setAttribute("fill", "rgba(255, 255, 255, 0.1)");
+                moonSvg.appendChild(craterInner);
+            });
+
+            for(let j = 0; j < 15; j++){
+                const smallCrater = document.createElementNS(svgNamespace, "circle");
+                const x = 20 + Math.random() * 60;
+                const y = 20 + Math.random() * 60;
+                const r = 0.8 + Math.random() * 1.5;
+                smallCrater.setAttribute("cx", x);
+                smallCrater.setAttribute("cy", y);
+                smallCrater.setAttribute("r", r);
+                smallCrater.setAttribute("fill", "rgba(0, 0, 0, 0.08)");
+                moonSvg.appendChild(smallCrater);
+            }
+
+            starContainer.appendChild(moonSvg);
+        });
+    }
+
+    createStars();
+
+    const envelopeNode = document.querySelector('.envelope');
+    envelopeNode.addEventListener('click', openInvitation);
+    envelopeNode.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            openInvitation();
+        }
+    });
+
+    document.addEventListener('mousemove', (e) => {
+        const starContainer = document.getElementById('stars-container');
+        if (document.getElementById('welcome-overlay').classList.contains('opened')) {
+            const x = (e.clientX / window.innerWidth - 0.5) * 30;
+            const y = (e.clientY / window.innerHeight - 0.5) * 30;
+            starContainer.style.transform = `translate(${-x}px, ${-y}px)`;
+        }
+    });
+
+    // ===== COUNTDOWN =====
+    function updateCountdown() {
+        const target = new Date("Dec 20, 2026 21:30:00").getTime();
+
+        setInterval(() => {
+            const now = new Date().getTime();
+            const diff = target - now;
+
+            if (diff > 0) {
+                const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+                document.getElementById('days').innerText = String(days).padStart(2, '0');
+                document.getElementById('hours').innerText = String(hours).padStart(2, '0');
+                document.getElementById('minutes').innerText = String(minutes).padStart(2, '0');
+                document.getElementById('seconds').innerText = String(seconds).padStart(2, '0');
+            }
+        }, 1000);
+    }
+
+    updateCountdown();
+
+    // ===== OBSERVADOR DE SCROLL =====
+    function observeElements() {
+        const options = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, options);
+
+        document.querySelectorAll('.fade-in-on-scroll').forEach(el => {
+            observer.observe(el);
+        });
+    }
+
+    // ===== MANEJADOR DEL FORMULARIO =====
+    function handleFormSubmit(e) {
+        e.preventDefault();
+
+        const form = e.target;
+        const name = form.querySelector('input[type="text"]').value;
+
+        alert(`${name}, gracias por confirmar!\n\nTe espero el 20 de Diciembre`);
+        form.reset();
+    }
+</script>
+
+</body>
+</html>
+
