@@ -177,7 +177,7 @@
             transition: box-shadow 0.3s ease;
             transform-style: preserve-3d;
             overflow: hidden; /* evita halos/destellos que se "escapan" por los costados en el estado inicial */
-            animation: float 6s ease-in-out infinite;
+            animation: float 5.6s linear infinite;
         }
 
         .envelope.open {
@@ -186,8 +186,15 @@
 
         /* Animación normal: Flotar suavemente */
         @keyframes float {
-            0%, 100% { transform: translateY(0) rotate(0deg); }
-            50% { transform: translateY(-15px) rotate(1deg); }
+            0% { transform: translateY(0) rotate(-2deg) scale(1); }
+            8% { transform: translateY(-5px) rotate(2.9deg) scale(1.006); }
+            24% { transform: translateY(-14px) rotate(-0.8deg) scale(1.01); }
+            34% { transform: translateY(-20px) rotate(2.5deg) scale(1.014); }
+            52% { transform: translateY(-30px) rotate(-2.7deg) scale(1.02); }
+            64% { transform: translateY(-22px) rotate(2.2deg) scale(1.016); }
+            82% { transform: translateY(-9px) rotate(-0.7deg) scale(1.008); }
+            92% { transform: translateY(-3px) rotate(1.8deg) scale(1.003); }
+            100% { transform: translateY(0) rotate(-2deg) scale(1); }
         }
 
         /* Animación Hover: Temblor intenso */
@@ -236,8 +243,8 @@
 
         /* En cerrado, el glow circular suele verse "mal"; lo bajamos y dejamos el pulso muy sutil */
         .magic-glow {
-            opacity: 0.35;
-            filter: blur(12px);
+            opacity: 0.42;
+            filter: blur(11px);
         }
 
         /* Fallback si el navegador no soporta blend (evita que el glow se "aplane") */
@@ -300,8 +307,8 @@
 
         /* Animación pulso circular suave cuando está cerrado */
         @keyframes pulse-glow-circle {
-            0% { transform: translate(-50%, -50%) translateZ(1.5px) scale(0.8); opacity: 0.5; }
-            100% { transform: translate(-50%, -50%) translateZ(1.5px) scale(1.1); opacity: 0.8; }
+            0% { transform: translate(-50%, -50%) translateZ(1.5px) scale(0.78); opacity: 0.45; }
+            100% { transform: translate(-50%, -50%) translateZ(1.5px) scale(1.16); opacity: 0.9; }
         }
 
         /* Burst (al click): bloom rápido + halo amplio + destello */
@@ -440,7 +447,7 @@
         /* FIX: Ocultar todo el contenido del sobre cuando pasa a full-screen */
         .envelope.full-screen > * {
             opacity: 0 !important;
-            transition: opacity 0.42s ease-out !important;
+            transition: opacity 0.55s ease-out !important;
             pointer-events: none !important;
         }
 
@@ -571,8 +578,8 @@
             transform: none;
         }
 
-        /* Visible cuando JS lo activa (mientras el welcome overlay esté visible) */
-        #welcome-overlay:not(.opened) .fullscreen-letter.is-visible {
+        /* Visible cuando JS lo activa; se mantiene durante el fade del overlay para evitar cortes. */
+        #welcome-overlay .fullscreen-letter.is-visible {
             opacity: 1;
             visibility: visible;
         }
@@ -592,8 +599,8 @@
         }
 
         .fullscreen-letter.is-visible .letter {
-            transform: scale(3.2);
-            transition: transform 1.35s ease-in-out;
+            transform: scale(3.85);
+            transition: transform 1.45s ease-in-out;
         }
 
         /* El contenedor se anima desde la posición real de la carta hacia el centro */
@@ -609,15 +616,15 @@
 
         .fullscreen-letter.is-zooming {
             transform: translate(0px, 0px) scale(1);
-            transition: transform 1.35s ease-in-out;
+            transition: transform 1.45s ease-in-out;
         }
 
         @media (max-width: 600px) {
-            .fullscreen-letter.is-visible .letter { transform: scale(2.4); }
+            .fullscreen-letter.is-visible .letter { transform: scale(2.95); }
         }
 
         @media (min-width: 1200px) {
-            .fullscreen-letter.is-visible .letter { transform: scale(3.6); }
+            .fullscreen-letter.is-visible .letter { transform: scale(4.2); }
         }
 
         /* En el overlay fullscreen, el contenido debe ser visible siempre */
@@ -701,14 +708,20 @@
             transition: transform 0.8s ease-in-out 0.6s; /* Espera a solapa */
         }
 
-        /* Levitación durante la pausa antes del zoom */
+        /* Levitación suave: vuelve exactamente al punto base para disparar el zoom sin corte. */
         @keyframes letter-hovering {
-            0%, 100% { transform: translateY(var(--letter-lift)) translateZ(2px) rotate(-0.35deg); }
-            50% { transform: translateY(calc(var(--letter-lift) - 12px)) translateZ(2px) rotate(0.35deg); }
+            0% { transform: translateY(var(--letter-lift)) translateZ(2px) rotate(-1.9deg); }
+            10% { transform: translateY(calc(var(--letter-lift) - 6px)) translateZ(2px) rotate(2.7deg); }
+            28% { transform: translateY(calc(var(--letter-lift) - 14px)) translateZ(2px) rotate(-0.6deg); }
+            42% { transform: translateY(calc(var(--letter-lift) - 22px)) translateZ(2px) rotate(2.3deg); }
+            58% { transform: translateY(calc(var(--letter-lift) - 30px)) translateZ(2px) rotate(-2.5deg); }
+            72% { transform: translateY(calc(var(--letter-lift) - 20px)) translateZ(2px) rotate(1.9deg); }
+            86% { transform: translateY(calc(var(--letter-lift) - 9px)) translateZ(2px) rotate(-0.4deg); }
+            100% { transform: translateY(var(--letter-lift)) translateZ(2px) rotate(-1.9deg); }
         }
 
         .envelope.open.is-hovering .letter {
-            animation: letter-hovering 2.2s ease-in-out infinite;
+            animation: letter-hovering 2.4s linear infinite;
         }
 
         /* Clase para la animación final de pantalla completa */
@@ -902,9 +915,7 @@
                 transition: none !important;
             }
 
-            .envelope.open.is-hovering .letter {
-                animation: none !important;
-            }
+            .envelope.open .letter { animation: none !important; }
         }
 
 
@@ -1632,12 +1643,14 @@
         const overlay = document.getElementById('welcome-overlay');
         const wrapper = document.querySelector('.envelope-wrapper'); // Contenedor para deshabilitar clicks
 
-        // Timing: primero sale la carta, luego se queda un momento "mostrándose" y recién ahí hace zoom.
+        // Timing: salida de carta, 1 ciclo de levitación y zoom al volver a posición base.
         const letterLiftMs = 1300;
-        const zoomPauseMs = 1450;
+        const hoverCycleMs = 2400;
         const overlayFadeDelayMs = 900;
+        const mainRevealLeadMs = 520;
         const fullscreenNode = document.querySelector('#welcome-overlay .fullscreen-letter');
         const srcLetterNode = document.querySelector('#welcome-overlay .envelope .letter');
+        let handoffStarted = false;
 
         if (envelope.classList.contains('open')) return;
 
@@ -1657,16 +1670,12 @@
         // Estado temporal para intensificar la iluminación justo al click.
         envelope.classList.add('is-opening');
 
-        // Esperar transición de salida carta
-        // Activar levitación durante la pausa previa al zoom
-        setTimeout(() => {
-            envelope.classList.add('is-hovering');
-        }, Math.max(letterLiftMs - 120, 0));
-
-        setTimeout(() => {
+        const startZoomHandoff = () => {
+            if (handoffStarted) return;
+            handoffStarted = true;
             envelope.classList.remove('is-hovering');
 
-            // Espera dos frames para asegurar que terminó la levitación y medir sin saltos.
+            // Espera dos frames para asegurar layout estable antes de medir y animar.
             requestAnimationFrame(() => {
                 requestAnimationFrame(() => {
                     // Preparar overlay full-screen antes de iniciar el zoom para evitar saltos de ancho/posición.
@@ -1678,13 +1687,6 @@
                         fullscreenNode.classList.remove('is-zooming');
                     }
 
-                    // Dejamos la carta original visible un poco más para que la transición se perciba continua.
-                    setTimeout(() => {
-                        if (srcLetterNode) {
-                            srcLetterNode.style.transition = 'opacity 0.34s ease-out';
-                            srcLetterNode.style.opacity = '0';
-                        }
-                    }, 360);
 
                     // Siguiente frame: animar hacia el centro (zoom)
                     requestAnimationFrame(() => {
@@ -1694,12 +1696,16 @@
                     // Ocultar el sobre completo cuando la carta ya avanzó en el zoom (sin corte).
                     setTimeout(() => {
                         envelope.classList.add('full-screen');
-                    }, 520);
+                    }, overlayFadeDelayMs + 900);
 
-                    // Una vez expandida bastante, comenzar transición del overlay
+                    // Mostrar el contenido principal un poco antes de cerrar el overlay.
+                    setTimeout(() => {
+                        revealMainContent();
+                    }, Math.max(overlayFadeDelayMs - mainRevealLeadMs, 0));
+
+                    // Comenzar transición del overlay antes de que termine el zoom completo.
                     setTimeout(() => {
                         overlay.classList.add('opened');
-                        revealMainContent();
                     }, overlayFadeDelayMs);
 
                     // Limpieza: ocultar el fullscreen-letter cuando ya terminó el fade del overlay
@@ -1713,10 +1719,27 @@
                             srcLetterNode.style.transform = '';
                             srcLetterNode.style.animation = '';
                         }
-                    }, overlayFadeDelayMs + 900);
+                    }, overlayFadeDelayMs + 1300);
                 });
             });
-        }, letterLiftMs + zoomPauseMs);
+        };
+
+        // Comenzar levitación cuando la carta ya terminó de salir.
+        setTimeout(() => {
+            envelope.classList.add('is-hovering');
+
+            if (srcLetterNode) {
+                // Trigger principal: justo cuando la animación vuelve al frame 0/base.
+                srcLetterNode.addEventListener('animationiteration', () => {
+                    startZoomHandoff();
+                }, { once: true });
+            }
+
+            // Fallback por si el navegador no emite animationiteration (o reduce motion).
+            setTimeout(() => {
+                startZoomHandoff();
+            }, hoverCycleMs + 160);
+        }, letterLiftMs);
     }
 
     // ===== CREAR ESTRELLAS Y LUNAS =====
