@@ -1998,19 +1998,23 @@
             return;
         }
 
-        // Estrategia: Intentar habilitar AMBOS (Orientation y Motion) si es posible.
-        // Los handlers decidirán cuál usar (preferencia: Orientation > Motion).
+        // Estrategia simplificada para iOS 13+:
+        // 1. Intentar Orientación primero.
+        // 2. Si falla o se deniega, intentar Movimiento (acelerómetro).
+        // Evitar pedir ambos permisos en secuencia rápida si no es necesario.
 
         let orientationGranted = false;
         let motionGranted = false;
 
-        // 1. Intentar DeviceOrientation
+        // PASO 1: Intentar DeviceOrientation
         if (typeof DeviceOrientationEvent !== 'undefined') {
             if (typeof DeviceOrientationEvent.requestPermission === 'function') {
-                // iOS 13+ requiere permiso
+                // iOS 13+ requiere permiso explícito
                 try {
                     const permission = await DeviceOrientationEvent.requestPermission();
-                    if (permission === 'granted') orientationGranted = true;
+                    if (permission === 'granted') {
+                        orientationGranted = true;
+                    }
                 } catch (e) {
                     console.log("DeviceOrientation permission error:", e);
                 }
@@ -2023,30 +2027,34 @@
         if (orientationGranted) {
             window.addEventListener('deviceorientation', handleDeviceOrientation, { passive: true });
             orientationState.listenerAttached = true;
-        }
-
-        // 2. Intentar DeviceMotion (como fallback o complemento)
-        if (typeof DeviceMotionEvent !== 'undefined') {
-            if (typeof DeviceMotionEvent.requestPermission === 'function') {
-                try {
-                    const permission = await DeviceMotionEvent.requestPermission();
-                    if (permission === 'granted') motionGranted = true;
-                } catch (e) {
-                    console.log("DeviceMotion permission error:", e);
+            orientationState.permissionStatus = 'enabled';
+        } else {
+            // PASO 2: Fallback a DeviceMotion si Orientación falló
+            if (typeof DeviceMotionEvent !== 'undefined') {
+                if (typeof DeviceMotionEvent.requestPermission === 'function') {
+                    try {
+                        const permission = await DeviceMotionEvent.requestPermission();
+                        if (permission === 'granted') {
+                            motionGranted = true;
+                        }
+                    } catch (e) {
+                        console.log("DeviceMotion permission error:", e);
+                    }
+                } else {
+                    motionGranted = true;
                 }
+            }
+
+            if (motionGranted) {
+                window.addEventListener('devicemotion', handleDeviceMotion, { passive: true });
+                orientationState.motionListenerAttached = true;
+                orientationState.permissionStatus = 'enabled';
             } else {
-                motionGranted = true;
+                orientationState.permissionStatus = 'denied';
             }
         }
 
-        if (motionGranted) {
-            window.addEventListener('devicemotion', handleDeviceMotion, { passive: true });
-            orientationState.motionListenerAttached = true;
-        }
-
         if (orientationGranted || motionGranted) {
-            orientationState.permissionStatus = 'enabled';
-
             // Resetear calibración al rotar pantalla
             window.addEventListener('orientationchange', () => {
                 orientationState.neutralBeta = null;
@@ -2055,9 +2063,6 @@
                 motionState.neutralY = null;
                 hasReceivedValidOrientation = false;
             }, { passive: true });
-
-        } else {
-            orientationState.permissionStatus = 'denied';
         }
 
         refreshMotionPermissionPrompt();
