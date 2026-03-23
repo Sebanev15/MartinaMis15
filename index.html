@@ -1947,9 +1947,14 @@
         requestParallaxFrame();
     }
 
+    let hasReceivedValidOrientation = false;
+
     function handleDeviceOrientation(event) {
         if (!isParallaxActive()) return;
-        if (typeof event.beta !== 'number' || typeof event.gamma !== 'number') return;
+        // Check strict null because 0 is valid
+        if (event.beta === null || event.gamma === null) return;
+
+        hasReceivedValidOrientation = true;
 
         if (orientationState.neutralBeta === null || orientationState.neutralGamma === null) {
             orientationState.neutralBeta = event.beta;
@@ -1964,7 +1969,9 @@
     }
 
     function handleDeviceMotion(event) {
+        if (hasReceivedValidOrientation) return;
         if (!isParallaxActive()) return;
+
         const acc = event.accelerationIncludingGravity;
         if (!acc || typeof acc.x !== 'number' || typeof acc.y !== 'number') return;
 
@@ -1980,84 +1987,79 @@
     }
 
     async function enableDeviceOrientation(fromUserGesture) {
-        if (orientationState.listenerAttached || orientationState.motionListenerAttached) {
-            orientationState.permissionStatus = 'enabled';
+        if (orientationState.permissionStatus === 'enabled') {
             refreshMotionPermissionPrompt();
             return;
         }
 
-        if (!orientationState.supported && !orientationState.motionSupported) {
-            orientationState.permissionStatus = 'unsupported';
-            refreshMotionPermissionPrompt();
-            return;
-        }
-
-        if (!window.isSecureContext) {
+        if (!window.isSecureContext && window.location.hostname !== 'localhost') {
             orientationState.permissionStatus = 'insecure-context';
             refreshMotionPermissionPrompt();
             return;
         }
 
-        try {
-            if (orientationState.supported) {
-                if (typeof DeviceOrientationEvent.requestPermission === 'function') {
-                    if (!fromUserGesture) {
-                        orientationState.permissionStatus = 'needs-user-gesture';
-                        refreshMotionPermissionPrompt();
-                        return;
-                    }
+        // Estrategia: Intentar habilitar AMBOS (Orientation y Motion) si es posible.
+        // Los handlers decidirán cuál usar (preferencia: Orientation > Motion).
 
+        let orientationGranted = false;
+        let motionGranted = false;
+
+        // 1. Intentar DeviceOrientation
+        if (typeof DeviceOrientationEvent !== 'undefined') {
+            if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+                // iOS 13+ requiere permiso
+                try {
                     const permission = await DeviceOrientationEvent.requestPermission();
-                    if (permission !== 'granted') {
-                        orientationState.permissionStatus = 'denied';
-                        refreshMotionPermissionPrompt();
-                    }
+                    if (permission === 'granted') orientationGranted = true;
+                } catch (e) {
+                    console.log("DeviceOrientation permission error:", e);
                 }
-
-                if (orientationState.permissionStatus !== 'denied') {
-                    window.addEventListener('deviceorientation', handleDeviceOrientation, { passive: true });
-                    window.addEventListener('orientationchange', () => {
-                        orientationState.neutralBeta = null;
-                        orientationState.neutralGamma = null;
-                        motionState.neutralX = null;
-                        motionState.neutralY = null;
-                    }, { passive: true });
-                    orientationState.listenerAttached = true;
-                }
+            } else {
+                // Navegadores que no requieren permiso explícito (Android, Desktop)
+                orientationGranted = true;
             }
-        } catch (error) {
+        }
+
+        if (orientationGranted) {
+            window.addEventListener('deviceorientation', handleDeviceOrientation, { passive: true });
+            orientationState.listenerAttached = true;
+        }
+
+        // 2. Intentar DeviceMotion (como fallback o complemento)
+        if (typeof DeviceMotionEvent !== 'undefined') {
+            if (typeof DeviceMotionEvent.requestPermission === 'function') {
+                try {
+                    const permission = await DeviceMotionEvent.requestPermission();
+                    if (permission === 'granted') motionGranted = true;
+                } catch (e) {
+                    console.log("DeviceMotion permission error:", e);
+                }
+            } else {
+                motionGranted = true;
+            }
+        }
+
+        if (motionGranted) {
+            window.addEventListener('devicemotion', handleDeviceMotion, { passive: true });
+            orientationState.motionListenerAttached = true;
+        }
+
+        if (orientationGranted || motionGranted) {
+            orientationState.permissionStatus = 'enabled';
+
+            // Resetear calibración al rotar pantalla
+            window.addEventListener('orientationchange', () => {
+                orientationState.neutralBeta = null;
+                orientationState.neutralGamma = null;
+                motionState.neutralX = null;
+                motionState.neutralY = null;
+                hasReceivedValidOrientation = false;
+            }, { passive: true });
+
+        } else {
             orientationState.permissionStatus = 'denied';
         }
 
-        // Fallback: acelerómetro para móviles donde orientation no reporta datos útiles.
-        if (!orientationState.listenerAttached && orientationState.motionSupported) {
-            try {
-                if (typeof DeviceMotionEvent.requestPermission === 'function') {
-                    if (!fromUserGesture) {
-                        orientationState.permissionStatus = 'needs-user-gesture';
-                        refreshMotionPermissionPrompt();
-                        return;
-                    }
-                    const motionPermission = await DeviceMotionEvent.requestPermission();
-                    if (motionPermission !== 'granted') {
-                        orientationState.permissionStatus = 'denied';
-                        refreshMotionPermissionPrompt();
-                        return;
-                    }
-                }
-
-                window.addEventListener('devicemotion', handleDeviceMotion, { passive: true });
-                orientationState.motionListenerAttached = true;
-            } catch (error) {
-                orientationState.permissionStatus = 'denied';
-                refreshMotionPermissionPrompt();
-                return;
-            }
-        }
-
-        orientationState.permissionStatus = (orientationState.listenerAttached || orientationState.motionListenerAttached)
-            ? 'enabled'
-            : 'denied';
         refreshMotionPermissionPrompt();
     }
 
