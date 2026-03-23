@@ -1416,12 +1416,17 @@
             }
 
             /* Mobile lite: menos capas y filtros para priorizar fluidez. */
-            #stars-container .moon-svg,
             .particles,
             .magic-glow,
             .light-rays,
             .inner-glow {
                 display: none !important;
+            }
+
+            #stars-container .moon-svg {
+                display: block !important;
+                filter: none !important;
+                opacity: 0.9;
             }
 
             .particle,
