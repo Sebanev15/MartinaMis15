@@ -186,6 +186,10 @@
                 transition: transform 0.65s ease-out;
                 will-change: transform;
             }
+
+            .envelope:not(.open) {
+                animation: envelope-levitate-mobile 9.2s ease-in-out infinite;
+            }
         }
 
         /* Habilitar puntero solo cuando el overlay es visible */
@@ -204,40 +208,63 @@
             transition: box-shadow 0.3s ease;
             transform-style: preserve-3d;
             overflow: hidden; /* evita halos/destellos que se "escapan" por los costados en el estado inicial */
-            animation: float 5.6s linear infinite;
+            animation: envelope-levitate 8.6s ease-in-out infinite;
         }
 
         .envelope.open {
             overflow: visible;
         }
 
-        /* Animación normal: Flotar suavemente */
-        @keyframes float {
-            0% { transform: translateY(0) rotate(-2deg) scale(1); }
-            8% { transform: translateY(-5px) rotate(2.9deg) scale(1.006); }
-            24% { transform: translateY(-14px) rotate(-0.8deg) scale(1.01); }
-            34% { transform: translateY(-20px) rotate(2.5deg) scale(1.014); }
-            52% { transform: translateY(-30px) rotate(-2.7deg) scale(1.02); }
-            64% { transform: translateY(-22px) rotate(2.2deg) scale(1.016); }
-            82% { transform: translateY(-9px) rotate(-0.7deg) scale(1.008); }
-            92% { transform: translateY(-3px) rotate(1.8deg) scale(1.003); }
-            100% { transform: translateY(0) rotate(-2deg) scale(1); }
-        }
+        /* Idle intercalado agresivo: levitacion + rafagas snake mas marcadas */
+        @keyframes envelope-levitate {
+            0%   { transform: translate3d(0, 0, 0) rotate(-1.2deg) scale(1); }
+            10%  { transform: translate3d(-4px, -11px, 0) rotate(1deg) scale(1.007); }
+            16%  { transform: translate3d(3px, -18px, 0) rotate(-0.7deg) scale(1.01); }
 
-        @keyframes float-mobile {
-            0% { transform: translate3d(0, 0, 0) rotate(-1.2deg) scale(1); }
-            20% { transform: translate3d(0, -6px, 0) rotate(1.8deg) scale(1.01); }
-            40% { transform: translate3d(0, -16px, 0) rotate(-0.4deg) scale(1.015); }
-            60% { transform: translate3d(0, -10px, 0) rotate(2deg) scale(1.012); }
-            80% { transform: translate3d(0, -4px, 0) rotate(-1deg) scale(1.006); }
+            /* Rafaga snake 1 */
+            20%  { transform: translate3d(8px, -16px, 0) rotate(2.2deg) scale(1.014); }
+            22%  { transform: translate3d(-9px, -18px, 0) rotate(-2.3deg) scale(1.014); }
+            24%  { transform: translate3d(8px, -19px, 0) rotate(2deg) scale(1.014); }
+            26%  { transform: translate3d(-7px, -16px, 0) rotate(-1.7deg) scale(1.013); }
+
+            36%  { transform: translate3d(1px, -8px, 0) rotate(0.5deg) scale(1.004); }
+            46%  { transform: translate3d(-3px, -18px, 0) rotate(-1deg) scale(1.009); }
+
+            /* Rafaga snake 2 */
+            52%  { transform: translate3d(9px, -18px, 0) rotate(2.25deg) scale(1.014); }
+            54%  { transform: translate3d(-8px, -19px, 0) rotate(-2deg) scale(1.014); }
+            56%  { transform: translate3d(7px, -17px, 0) rotate(1.7deg) scale(1.013); }
+            58%  { transform: translate3d(-6px, -16px, 0) rotate(-1.4deg) scale(1.012); }
+
+            68%  { transform: translate3d(2px, -7px, 0) rotate(0.45deg) scale(1.004); }
+
+            /* Rafaga snake 3 */
+            74%  { transform: translate3d(8px, -14px, 0) rotate(1.9deg) scale(1.012); }
+            76%  { transform: translate3d(-7px, -15px, 0) rotate(-1.9deg) scale(1.012); }
+            78%  { transform: translate3d(6px, -13px, 0) rotate(1.45deg) scale(1.011); }
+
+            /* Rafaga snake 4 (cierre) */
+            84%  { transform: translate3d(7px, -10px, 0) rotate(1.55deg) scale(1.01); }
+            86%  { transform: translate3d(-6px, -11px, 0) rotate(-1.55deg) scale(1.01); }
+            88%  { transform: translate3d(5px, -9px, 0) rotate(1.1deg) scale(1.009); }
+
+            94%  { transform: translate3d(0, -4px, 0) rotate(0.25deg) scale(1.002); }
             100% { transform: translate3d(0, 0, 0) rotate(-1.2deg) scale(1); }
         }
 
-        @media (hover: none) {
-            .envelope:not(.open) {
-                animation: float-mobile 7s ease-in-out infinite;
-            }
+        @keyframes envelope-levitate-mobile {
+            0%   { transform: translate3d(0, 0, 0) rotate(-0.8deg) scale(1); }
+            18%  { transform: translate3d(-2px, -8px, 0) rotate(0.6deg) scale(1.004); }
+            28%  { transform: translate3d(4px, -12px, 0) rotate(1.2deg) scale(1.007); }
+            34%  { transform: translate3d(-4px, -13px, 0) rotate(-1.2deg) scale(1.007); }
+            40%  { transform: translate3d(3px, -11px, 0) rotate(0.9deg) scale(1.006); }
+            56%  { transform: translate3d(0, -6px, 0) rotate(0.4deg) scale(1.003); }
+            66%  { transform: translate3d(4px, -12px, 0) rotate(1.15deg) scale(1.007); }
+            72%  { transform: translate3d(-4px, -13px, 0) rotate(-1.15deg) scale(1.007); }
+            78%  { transform: translate3d(3px, -10px, 0) rotate(0.9deg) scale(1.006); }
+            100% { transform: translate3d(0, 0, 0) rotate(-0.8deg) scale(1); }
         }
+
 
         /* Animación Hover: Temblor intenso */
         @keyframes shake-hard {
@@ -474,9 +501,11 @@
             transform: scale(1);
         }
 
-        .envelope:hover {
-            animation: shake-hard 0.5s ease-in-out infinite;
-            box-shadow: 0 15px 40px rgba(212, 175, 55, 0.2);
+        @media (hover: hover) and (pointer: fine) {
+            .envelope:hover {
+                animation: shake-hard 0.36s ease-in-out infinite;
+                box-shadow: 0 15px 40px rgba(212, 175, 55, 0.2);
+            }
         }
 
         /* Al abrir (click), dejar de temblar aunque el mouse siga encima */
@@ -694,14 +723,23 @@
             text-align: center;
             color: var(--text-light);
             opacity: 0;
-            transform: translateY(20px);
-            transition: opacity 0.5s ease 1s, transform 0.5s ease 1s;
+            transform: translateY(26px) scale(0.95) rotate(-1deg);
+            transition: none;
             z-index: 2;
+        }
+
+        @keyframes letter-content-snake-in {
+            0% { opacity: 0; transform: translateY(26px) scale(0.95) rotate(-1.2deg); }
+            30% { opacity: 1; transform: translateY(-6px) scale(1.03) rotate(1.6deg); }
+            50% { transform: translateY(1px) scale(1.01) rotate(-1.4deg); }
+            70% { transform: translateY(-1px) scale(1.005) rotate(0.9deg); }
+            100% { opacity: 1; transform: translateY(0) scale(1) rotate(0deg); }
         }
 
         .envelope.open .letter-content {
              opacity: 1;
              transform: translateY(0);
+             animation: letter-content-snake-in 0.52s cubic-bezier(0.22, 0.88, 0.2, 1) 0.72s both;
         }
 
         .letter h2 {
@@ -747,23 +785,23 @@
         /* Estado intermedio: Carta fuera pero sin zoom excesivo */
         .envelope.open .letter {
             transform: translateY(var(--letter-lift)) translateZ(2px);
-            transition: transform 0.8s ease-in-out 0.6s; /* Espera a solapa */
+            transition: transform 0.62s ease-in-out 0.48s; /* Espera a solapa (mas rapido) */
         }
 
-        /* Levitación suave: vuelve exactamente al punto base para disparar el zoom sin corte. */
+        /* Levitación suave con balance lento antes del zoom final */
         @keyframes letter-hovering {
-            0% { transform: translateY(var(--letter-lift)) translateZ(2px) rotate(-1.9deg); }
-            10% { transform: translateY(calc(var(--letter-lift) - 6px)) translateZ(2px) rotate(2.7deg); }
-            28% { transform: translateY(calc(var(--letter-lift) - 14px)) translateZ(2px) rotate(-0.6deg); }
-            42% { transform: translateY(calc(var(--letter-lift) - 22px)) translateZ(2px) rotate(2.3deg); }
-            58% { transform: translateY(calc(var(--letter-lift) - 30px)) translateZ(2px) rotate(-2.5deg); }
-            72% { transform: translateY(calc(var(--letter-lift) - 20px)) translateZ(2px) rotate(1.9deg); }
-            86% { transform: translateY(calc(var(--letter-lift) - 9px)) translateZ(2px) rotate(-0.4deg); }
-            100% { transform: translateY(var(--letter-lift)) translateZ(2px) rotate(-1.9deg); }
+            0% { transform: translateY(var(--letter-lift)) translateZ(2px) rotate(-1deg); }
+            12% { transform: translateY(calc(var(--letter-lift) - 8px)) translateZ(2px) rotate(1.6deg); }
+            22% { transform: translateY(calc(var(--letter-lift) - 18px)) translateZ(2px) rotate(-1.4deg); }
+            32% { transform: translateY(calc(var(--letter-lift) - 26px)) translateZ(2px) rotate(1.7deg); }
+            44% { transform: translateY(calc(var(--letter-lift) - 16px)) translateZ(2px) rotate(-1.1deg); }
+            58% { transform: translateY(calc(var(--letter-lift) - 24px)) translateZ(2px) rotate(1.2deg); }
+            74% { transform: translateY(calc(var(--letter-lift) - 10px)) translateZ(2px) rotate(-0.8deg); }
+            100% { transform: translateY(var(--letter-lift)) translateZ(2px) rotate(-1deg); }
         }
 
         .envelope.open.is-hovering .letter {
-            animation: letter-hovering 2.4s linear infinite;
+            animation: letter-hovering 2.4s ease-in-out infinite;
         }
 
         /* Clase para la animación final de pantalla completa */
@@ -1373,6 +1411,35 @@
             .envelope {
                 width: 300px;
                 height: 200px;
+                animation: envelope-levitate-mobile 9.2s ease-in-out infinite;
+                box-shadow: 0 8px 22px rgba(0,0,0,0.44);
+            }
+
+            /* Mobile lite: menos capas y filtros para priorizar fluidez. */
+            #stars-container .moon-svg,
+            .particles,
+            .magic-glow,
+            .light-rays,
+            .inner-glow {
+                display: none !important;
+            }
+
+            .particle,
+            .magic-glow,
+            .light-rays,
+            .inner-glow {
+                animation: none !important;
+                filter: none !important;
+                transition: none !important;
+            }
+
+            .photo-placeholder {
+                height: 280px;
+                margin: 52px auto;
+            }
+
+            .countdown {
+                gap: 8px;
             }
 
             .side.left {
@@ -1790,8 +1857,10 @@
     function createStars() {
         const starContainer = document.getElementById('stars-container');
         const svgNamespace = "http://www.w3.org/2000/svg";
+        const mobileLite = window.matchMedia('(max-width: 768px)').matches;
+        const starCount = mobileLite ? 48 : 120;
 
-        for (let i = 0; i < 120; i++) {
+        for (let i = 0; i < starCount; i++) {
             const dot = document.createElement('div');
             dot.className = 'star-dot';
             const size = Math.random() * 2.5 + 0.5;
@@ -1804,10 +1873,12 @@
             starContainer.appendChild(dot);
         }
 
-        const moonConfigs = [
-            { top: 12, left: 80, size: 140 },
-            { top: 70, left: 10, size: 100 }
-        ];
+        const moonConfigs = mobileLite
+            ? [{ top: 14, left: 78, size: 96 }]
+            : [
+                { top: 12, left: 80, size: 140 },
+                { top: 70, left: 10, size: 100 }
+            ];
 
         moonConfigs.forEach(config => {
             const moonSvg = document.createElementNS(svgNamespace, "svg");
@@ -1892,6 +1963,7 @@
     const starContainerNode = document.getElementById('stars-container');
     const motionPermissionBtn = document.getElementById('motion-permission-btn');
     const reduceMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const mobileLiteQuery = window.matchMedia('(max-width: 768px)');
     const parallaxState = {
         targetX: 0,
         targetY: 0,
@@ -1952,7 +2024,8 @@
 
     function isParallaxActive() {
         return Boolean(starContainerNode)
-            && !reduceMotionQuery.matches;
+            && !reduceMotionQuery.matches
+            && !mobileLiteQuery.matches;
     }
 
     function applyParallaxFrame() {
