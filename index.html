@@ -306,15 +306,15 @@
 
         /* Burst (al click): bloom rápido + halo amplio + destello */
         @keyframes magic-bloom {
-            0%   { transform: translate(-50%, -56%) translateZ(1.5px) scale(0.9);  filter: blur(14px) brightness(1);   opacity: 0.45; }
-            22%  { transform: translate(-50%, -56%) translateZ(1.5px) scale(1.65); filter: blur(18px) brightness(1.25); opacity: 1; }
-            58%  { transform: translate(-50%, -56%) translateZ(1.5px) scale(1.28); filter: blur(10px) brightness(1.15); opacity: 0.95; }
-            100% { transform: translate(-50%, -56%) translateZ(1.5px) scale(1.15); filter: blur(8px)  brightness(1.05); opacity: 0.95; }
+            0%   { transform: translate(-50%, -56%) translateZ(1.5px) scale(1.0);  filter: blur(10px) brightness(1);    opacity: 0; }
+            24%  { transform: translate(-50%, -56%) translateZ(1.5px) scale(1.3); filter: blur(13px) brightness(1.1); opacity: 0.46; }
+            62%  { transform: translate(-50%, -56%) translateZ(1.5px) scale(1.2); filter: blur(9px)  brightness(1.06);  opacity: 0.38; }
+            100% { transform: translate(-50%, -56%) translateZ(1.5px) scale(1.15); filter: blur(8px)  brightness(1.02); opacity: 0.28; }
         }
 
         @keyframes magic-flash {
             0% { opacity: 0; }
-            18% { opacity: 1; }
+            18% { opacity: 0.38; }
             100% { opacity: 0; }
         }
 
@@ -329,7 +329,7 @@
 
         /* Mejor iluminación al click (durante la transición): más bloom y destello */
         .envelope.open.is-opening .magic-glow {
-            animation: magic-bloom 1.25s cubic-bezier(0.2, 0.85, 0.2, 1) both;
+            animation: magic-bloom 1.1s cubic-bezier(0.22, 0.82, 0.2, 1) both;
         }
 
         .envelope.open .magic-glow span {
@@ -440,7 +440,7 @@
         /* FIX: Ocultar todo el contenido del sobre cuando pasa a full-screen */
         .envelope.full-screen > * {
             opacity: 0 !important;
-            transition: opacity 0.2s linear !important;
+            transition: opacity 0.42s ease-out !important;
             pointer-events: none !important;
         }
 
@@ -577,10 +577,9 @@
             visibility: visible;
         }
 
-        /* Seguridad: si el overlay se abrió/cerró, nunca mostrar fullscreen-letter */
+        /* Mantener la carta del handoff visible durante el fade del overlay para evitar "corte" */
         #welcome-overlay.opened .fullscreen-letter {
-            opacity: 0 !important;
-            visibility: hidden !important;
+            pointer-events: none;
         }
 
         .fullscreen-letter .letter {
@@ -806,20 +805,17 @@
 
         /* Durante el click: la luz se siente más "saliendo de adentro" (más abajo y más concentrada) */
         .envelope.open.is-opening .inner-glow {
-            filter: blur(7px) brightness(1.15);
+            filter: blur(7px) brightness(1.08);
             opacity: 1;
         }
 
         .envelope.open.is-opening .light-rays {
-            opacity: 1;
-            bottom: 2px;
-            filter: blur(7px) brightness(1.12);
+            opacity: 0.78;
+            filter: blur(8px) brightness(1.02);
         }
 
-        /* En el burst, bajamos un poco el glow circular para que no parezca "una pelota" */
-        .envelope.open.is-opening .magic-glow {
-            opacity: 0.78;
-        }
+        /* Evita pico de brillo súbito durante el primer frame del click */
+        .envelope.open.is-opening .magic-glow { opacity: 0.34; }
 
         /* Glow interno: sin clip-path duro (evita triángulos). Máscara suave. */
         .inner-glow {
@@ -880,8 +876,9 @@
         }
 
         /* Cuando la carta ya se fue a full-screen: la luz no debe seguir "saliendo del sobre" */
-        .envelope.full-screen .inner-glow { opacity: 0; }
-        .envelope.full-screen .light-rays { opacity: 0; animation: none; }
+        .envelope.full-screen .inner-glow { opacity: 0; transition: opacity 0.45s ease-out; }
+        .envelope.full-screen .light-rays { opacity: 0; animation: none; transition: opacity 0.45s ease-out; }
+        .envelope.full-screen .magic-glow { opacity: 0; transition: opacity 0.45s ease-out; }
 
         /* Importante: en full-screen no recortar el sobre, porque recorta la carta.
            El recorte del brillo se hace en sus capas (inner-glow/light-rays/magic-glow). */
@@ -1637,7 +1634,7 @@
 
         // Timing: primero sale la carta, luego se queda un momento "mostrándose" y recién ahí hace zoom.
         const letterLiftMs = 1300;
-        const zoomPauseMs = 850;
+        const zoomPauseMs = 1450;
         const overlayFadeDelayMs = 900;
         const fullscreenNode = document.querySelector('#welcome-overlay .fullscreen-letter');
         const srcLetterNode = document.querySelector('#welcome-overlay .envelope .letter');
@@ -1659,9 +1656,6 @@
 
         // Estado temporal para intensificar la iluminación justo al click.
         envelope.classList.add('is-opening');
-        setTimeout(() => {
-            envelope.classList.remove('is-opening');
-        }, 1400);
 
         // Esperar transición de salida carta
         // Activar levitación durante la pausa previa al zoom
@@ -1672,60 +1666,56 @@
         setTimeout(() => {
             envelope.classList.remove('is-hovering');
 
-            // ESTABILIZACIÓN CRITICA:
-            // Antes de medir coordenadas, congelar la carta original en su posición final exacta.
-            // Esto evita que animaciones residuales (hovering) o transiciones falseen el cálculo.
-            if (srcLetterNode) {
-                srcLetterNode.style.transition = 'none';
-                srcLetterNode.style.animation = 'none';
-                const computedTransform = window.getComputedStyle(srcLetterNode).transform;
-                // Congela exactamente en la transform final calculada por CSS (desktop/móvil).
-                srcLetterNode.style.transform = computedTransform && computedTransform !== 'none'
-                    ? computedTransform
-                    : 'translateY(var(--letter-lift)) translateZ(2px)';
-                // Forzar reflow para que el navegador aplique esto YA
-                void srcLetterNode.offsetWidth;
-            }
-
-            // Preparar overlay full-screen antes de iniciar el zoom para evitar saltos de ancho/posición.
-            syncFullscreenLetter();
-            positionFullscreenLetterFromSource();
-
-            if (fullscreenNode) {
-                fullscreenNode.classList.add('is-visible');
-                fullscreenNode.classList.remove('is-zooming');
-            }
-
-            // Evitar que se vean dos cartas a la vez durante el zoom.
-            // La opacidad 0 en srcLetterNode oculta la original INSTANTANEAMENTE.
-            if (srcLetterNode) srcLetterNode.style.opacity = '0';
-
-            // Siguiente frame: animar hacia el centro (zoom)
+            // Espera dos frames para asegurar que terminó la levitación y medir sin saltos.
             requestAnimationFrame(() => {
                 requestAnimationFrame(() => {
-                    if (fullscreenNode) fullscreenNode.classList.add('is-zooming');
+                    // Preparar overlay full-screen antes de iniciar el zoom para evitar saltos de ancho/posición.
+                    syncFullscreenLetter();
+                    positionFullscreenLetterFromSource();
+
+                    if (fullscreenNode) {
+                        fullscreenNode.classList.add('is-visible');
+                        fullscreenNode.classList.remove('is-zooming');
+                    }
+
+                    // Dejamos la carta original visible un poco más para que la transición se perciba continua.
+                    setTimeout(() => {
+                        if (srcLetterNode) {
+                            srcLetterNode.style.transition = 'opacity 0.34s ease-out';
+                            srcLetterNode.style.opacity = '0';
+                        }
+                    }, 360);
+
+                    // Siguiente frame: animar hacia el centro (zoom)
+                    requestAnimationFrame(() => {
+                        if (fullscreenNode) fullscreenNode.classList.add('is-zooming');
+                    });
+
+                    // Ocultar el sobre completo cuando la carta ya avanzó en el zoom (sin corte).
+                    setTimeout(() => {
+                        envelope.classList.add('full-screen');
+                    }, 520);
+
+                    // Una vez expandida bastante, comenzar transición del overlay
+                    setTimeout(() => {
+                        overlay.classList.add('opened');
+                        revealMainContent();
+                    }, overlayFadeDelayMs);
+
+                    // Limpieza: ocultar el fullscreen-letter cuando ya terminó el fade del overlay
+                    setTimeout(() => {
+                        if (fullscreenNode) fullscreenNode.classList.remove('is-visible');
+                        envelope.classList.remove('is-opening');
+                        // Restauramos estilos solo por higiene (aunque el overlay ya se fue)
+                        if (srcLetterNode) {
+                            srcLetterNode.style.opacity = '';
+                            srcLetterNode.style.transition = '';
+                            srcLetterNode.style.transform = '';
+                            srcLetterNode.style.animation = '';
+                        }
+                    }, overlayFadeDelayMs + 900);
                 });
             });
-
-            envelope.classList.add('full-screen');
-
-            // Una vez expandida bastante, comenzar transición del overlay
-            setTimeout(() => {
-                overlay.classList.add('opened');
-                revealMainContent();
-            }, overlayFadeDelayMs);
-
-            // Limpieza: ocultar el fullscreen-letter cuando ya terminó el fade del overlay
-            setTimeout(() => {
-                if (fullscreenNode) fullscreenNode.classList.remove('is-visible');
-                // Restauramos estilos solo por higiene (aunque el overlay ya se fue)
-                if (srcLetterNode) {
-                    srcLetterNode.style.opacity = '';
-                    srcLetterNode.style.transition = '';
-                    srcLetterNode.style.transform = '';
-                    srcLetterNode.style.animation = '';
-                }
-            }, overlayFadeDelayMs + 900);
         }, letterLiftMs + zoomPauseMs);
     }
 
@@ -1845,10 +1835,17 @@
 
     const orientationState = {
         supported: 'DeviceOrientationEvent' in window,
+        motionSupported: 'DeviceMotionEvent' in window,
         listenerAttached: false,
+        motionListenerAttached: false,
         permissionStatus: 'idle',
         neutralBeta: null,
         neutralGamma: null
+    };
+
+    const motionState = {
+        neutralX: null,
+        neutralY: null
     };
 
     function refreshMotionPermissionPrompt() {
@@ -1943,14 +1940,30 @@
         setParallaxTarget(deltaGamma / 30, deltaBeta / 35, 22);
     }
 
+    function handleDeviceMotion(event) {
+        if (!isParallaxActive()) return;
+        const acc = event.accelerationIncludingGravity;
+        if (!acc || typeof acc.x !== 'number' || typeof acc.y !== 'number') return;
+
+        if (motionState.neutralX === null || motionState.neutralY === null) {
+            motionState.neutralX = acc.x;
+            motionState.neutralY = acc.y;
+            return;
+        }
+
+        const dx = acc.x - motionState.neutralX;
+        const dy = acc.y - motionState.neutralY;
+        setParallaxTarget(-dx / 5.2, dy / 5.2, 20);
+    }
+
     async function enableDeviceOrientation(fromUserGesture) {
-        if (orientationState.listenerAttached) {
+        if (orientationState.listenerAttached || orientationState.motionListenerAttached) {
             orientationState.permissionStatus = 'enabled';
             refreshMotionPermissionPrompt();
             return;
         }
 
-        if (!orientationState.supported) {
+        if (!orientationState.supported && !orientationState.motionSupported) {
             orientationState.permissionStatus = 'unsupported';
             refreshMotionPermissionPrompt();
             return;
@@ -1963,33 +1976,65 @@
         }
 
         try {
-            if (typeof DeviceOrientationEvent.requestPermission === 'function') {
-                if (!fromUserGesture) {
-                    orientationState.permissionStatus = 'needs-user-gesture';
-                    refreshMotionPermissionPrompt();
-                    return;
+            if (orientationState.supported) {
+                if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+                    if (!fromUserGesture) {
+                        orientationState.permissionStatus = 'needs-user-gesture';
+                        refreshMotionPermissionPrompt();
+                        return;
+                    }
+
+                    const permission = await DeviceOrientationEvent.requestPermission();
+                    if (permission !== 'granted') {
+                        orientationState.permissionStatus = 'denied';
+                        refreshMotionPermissionPrompt();
+                    }
                 }
 
-                const permission = await DeviceOrientationEvent.requestPermission();
-                if (permission !== 'granted') {
-                    orientationState.permissionStatus = 'denied';
-                    refreshMotionPermissionPrompt();
-                    return;
+                if (orientationState.permissionStatus !== 'denied') {
+                    window.addEventListener('deviceorientation', handleDeviceOrientation, { passive: true });
+                    window.addEventListener('orientationchange', () => {
+                        orientationState.neutralBeta = null;
+                        orientationState.neutralGamma = null;
+                        motionState.neutralX = null;
+                        motionState.neutralY = null;
+                    }, { passive: true });
+                    orientationState.listenerAttached = true;
                 }
             }
         } catch (error) {
             orientationState.permissionStatus = 'denied';
-            refreshMotionPermissionPrompt();
-            return;
         }
 
-        window.addEventListener('deviceorientation', handleDeviceOrientation, { passive: true });
-        window.addEventListener('orientationchange', () => {
-            orientationState.neutralBeta = null;
-            orientationState.neutralGamma = null;
-        }, { passive: true });
-        orientationState.listenerAttached = true;
-        orientationState.permissionStatus = 'enabled';
+        // Fallback: acelerómetro para móviles donde orientation no reporta datos útiles.
+        if (!orientationState.listenerAttached && orientationState.motionSupported) {
+            try {
+                if (typeof DeviceMotionEvent.requestPermission === 'function') {
+                    if (!fromUserGesture) {
+                        orientationState.permissionStatus = 'needs-user-gesture';
+                        refreshMotionPermissionPrompt();
+                        return;
+                    }
+                    const motionPermission = await DeviceMotionEvent.requestPermission();
+                    if (motionPermission !== 'granted') {
+                        orientationState.permissionStatus = 'denied';
+                        refreshMotionPermissionPrompt();
+                        return;
+                    }
+                }
+
+                window.addEventListener('devicemotion', handleDeviceMotion, { passive: true });
+                orientationState.motionListenerAttached = true;
+            } catch (error) {
+                orientationState.permissionStatus = 'denied';
+                refreshMotionPermissionPrompt();
+                return;
+            }
+        }
+
+        orientationState.permissionStatus = (orientationState.listenerAttached || orientationState.motionListenerAttached)
+            ? 'enabled'
+            : 'denied';
         refreshMotionPermissionPrompt();
     }
 
@@ -2004,6 +2049,21 @@
         const touch = e.touches[0];
         const normalizedX = touch.clientX / window.innerWidth - 0.5;
         const normalizedY = touch.clientY / window.innerHeight - 0.5;
+        setParallaxTarget(normalizedX * 2, normalizedY * 2, 24);
+    }, { passive: true });
+
+    document.addEventListener('touchstart', (e) => {
+        if (!e.touches || e.touches.length === 0) return;
+        const touch = e.touches[0];
+        const normalizedX = touch.clientX / window.innerWidth - 0.5;
+        const normalizedY = touch.clientY / window.innerHeight - 0.5;
+        setParallaxTarget(normalizedX * 2, normalizedY * 2, 20);
+    }, { passive: true });
+
+    document.addEventListener('pointermove', (e) => {
+        if (e.pointerType !== 'touch') return;
+        const normalizedX = e.clientX / window.innerWidth - 0.5;
+        const normalizedY = e.clientY / window.innerHeight - 0.5;
         setParallaxTarget(normalizedX * 2, normalizedY * 2, 24);
     }, { passive: true });
 
