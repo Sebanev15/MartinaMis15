@@ -19,6 +19,12 @@
             --text-light: #f5f5f5;
             --particle-blur: 0.6px;
             --letter-lift: -220px;
+            --tilt-envelope-rotateX: 0deg;
+            --tilt-envelope-rotateY: 0deg;
+            --tilt-content-rotateX: 0deg;
+            --tilt-content-rotateY: 0deg;
+            --tilt-content-translateX: 0px;
+            --tilt-content-translateY: 0px;
         }
 
         html, body {
@@ -161,6 +167,27 @@
             z-index: 2001;
         }
 
+        @media (hover: none) {
+            body.has-tilt .envelope-wrapper {
+                transform-origin: center 60%;
+                transform: perspective(1400px)
+                    rotateX(var(--tilt-envelope-rotateX))
+                    rotateY(var(--tilt-envelope-rotateY))
+                    translate3d(var(--tilt-content-translateX), var(--tilt-content-translateY), 0);
+                transition: transform 0.5s ease-out;
+            }
+
+            body.invitation-open.has-tilt #main-content {
+                transform-origin: center 20%;
+                transform: perspective(2000px)
+                    rotateX(var(--tilt-content-rotateX))
+                    rotateY(var(--tilt-content-rotateY))
+                    translate3d(var(--tilt-content-translateX), var(--tilt-content-translateY), 0);
+                transition: transform 0.65s ease-out;
+                will-change: transform;
+            }
+        }
+
         /* Habilitar puntero solo cuando el overlay es visible */
         #welcome-overlay:not(.opened) .envelope-wrapper {
             pointer-events: auto;
@@ -195,6 +222,21 @@
             82% { transform: translateY(-9px) rotate(-0.7deg) scale(1.008); }
             92% { transform: translateY(-3px) rotate(1.8deg) scale(1.003); }
             100% { transform: translateY(0) rotate(-2deg) scale(1); }
+        }
+
+        @keyframes float-mobile {
+            0% { transform: translate3d(0, 0, 0) rotate(-1.2deg) scale(1); }
+            20% { transform: translate3d(0, -6px, 0) rotate(1.8deg) scale(1.01); }
+            40% { transform: translate3d(0, -16px, 0) rotate(-0.4deg) scale(1.015); }
+            60% { transform: translate3d(0, -10px, 0) rotate(2deg) scale(1.012); }
+            80% { transform: translate3d(0, -4px, 0) rotate(-1deg) scale(1.006); }
+            100% { transform: translate3d(0, 0, 0) rotate(-1.2deg) scale(1); }
+        }
+
+        @media (hover: none) {
+            .envelope:not(.open) {
+                animation: float-mobile 7s ease-in-out infinite;
+            }
         }
 
         /* Animación Hover: Temblor intenso */
@@ -969,6 +1011,7 @@
             visibility: hidden;
             opacity: 0;
             transition: opacity 1s ease-in, visibility 1s ease-in;
+            transform: translateZ(0);
         }
 
         #main-content.show {
@@ -1594,6 +1637,7 @@
     function revealMainContent() {
         document.getElementById('main-content').classList.add('show');
         document.body.style.overflow = 'auto';
+        document.body.classList.add('invitation-open');
         refreshMotionPermissionPrompt();
         observeElements();
     }
@@ -1863,7 +1907,8 @@
         motionListenerAttached: false,
         permissionStatus: 'idle',
         neutralBeta: null,
-        neutralGamma: null
+        neutralGamma: null,
+        orientationChangeHandlerAttached: false
     };
 
     const motionState = {
@@ -1874,8 +1919,9 @@
     function refreshMotionPermissionPrompt() {
         if (!motionPermissionBtn) return;
 
-        const isAfterOverlay = Boolean(overlayNode) && overlayNode.classList.contains('opened');
-        const shouldHide = !isAfterOverlay || reduceMotionQuery.matches;
+        const overlayDismissed = Boolean(overlayNode) && overlayNode.classList.contains('opened');
+        const invitationReady = overlayDismissed || document.body.classList.contains('invitation-open');
+        const shouldHide = !invitationReady || reduceMotionQuery.matches;
         if (shouldHide || orientationState.permissionStatus === 'enabled' || orientationState.permissionStatus === 'unsupported') {
             motionPermissionBtn.classList.remove('is-visible');
             return;
@@ -1906,8 +1952,6 @@
 
     function isParallaxActive() {
         return Boolean(starContainerNode)
-            && Boolean(overlayNode)
-            && overlayNode.classList.contains('opened')
             && !reduceMotionQuery.matches;
     }
 
@@ -1924,6 +1968,20 @@
 
         if (starContainerNode) {
             starContainerNode.style.transform = `translate(${-parallaxState.currentX}px, ${-parallaxState.currentY}px)`;
+        }
+
+        const docStyle = document.documentElement.style;
+        const envelopeTiltY = clamp(parallaxState.currentY / 35, -6, 6);
+        const envelopeTiltX = clamp(parallaxState.currentX / 35, -6, 6);
+        docStyle.setProperty('--tilt-envelope-rotateX', `${-envelopeTiltY}deg`);
+        docStyle.setProperty('--tilt-envelope-rotateY', `${-envelopeTiltX}deg`);
+        docStyle.setProperty('--tilt-content-rotateX', `${-envelopeTiltY * 0.6}deg`);
+        docStyle.setProperty('--tilt-content-rotateY', `${-envelopeTiltX * 0.6}deg`);
+        docStyle.setProperty('--tilt-content-translateX', `${-parallaxState.currentX * 0.35}px`);
+        docStyle.setProperty('--tilt-content-translateY', `${-parallaxState.currentY * 0.35}px`);
+
+        if (!document.body.classList.contains('has-tilt') && (Math.abs(envelopeTiltX) > 0.02 || Math.abs(envelopeTiltY) > 0.02)) {
+            document.body.classList.add('has-tilt');
         }
 
         const remainingX = Math.abs(parallaxState.targetX - parallaxState.currentX);
@@ -1992,77 +2050,83 @@
             return;
         }
 
+        if (!orientationState.supported && !orientationState.motionSupported) {
+            orientationState.permissionStatus = 'unsupported';
+            refreshMotionPermissionPrompt();
+            return;
+        }
+
         if (!window.isSecureContext && window.location.hostname !== 'localhost') {
             orientationState.permissionStatus = 'insecure-context';
             refreshMotionPermissionPrompt();
             return;
         }
 
-        // Estrategia simplificada para iOS 13+:
-        // 1. Intentar Orientación primero.
-        // 2. Si falla o se deniega, intentar Movimiento (acelerómetro).
-        // Evitar pedir ambos permisos en secuencia rápida si no es necesario.
+        const orientationNeedsPermission = orientationState.supported
+            && typeof DeviceOrientationEvent !== 'undefined'
+            && typeof DeviceOrientationEvent.requestPermission === 'function';
+        const motionNeedsPermission = orientationState.motionSupported
+            && typeof DeviceMotionEvent !== 'undefined'
+            && typeof DeviceMotionEvent.requestPermission === 'function';
+
+        if ((orientationNeedsPermission || motionNeedsPermission) && !fromUserGesture) {
+            orientationState.permissionStatus = 'needs-user-gesture';
+            refreshMotionPermissionPrompt();
+            return;
+        }
 
         let orientationGranted = false;
         let motionGranted = false;
 
-        // PASO 1: Intentar DeviceOrientation
-        if (typeof DeviceOrientationEvent !== 'undefined') {
-            if (typeof DeviceOrientationEvent.requestPermission === 'function') {
-                // iOS 13+ requiere permiso explícito
+        if (orientationState.supported) {
+            if (orientationNeedsPermission) {
                 try {
-                    const permission = await DeviceOrientationEvent.requestPermission();
-                    if (permission === 'granted') {
-                        orientationGranted = true;
-                    }
-                } catch (e) {
-                    console.log("DeviceOrientation permission error:", e);
+                    orientationGranted = (await DeviceOrientationEvent.requestPermission()) === 'granted';
+                } catch (error) {
+                    console.warn('DeviceOrientation permission error', error);
                 }
             } else {
-                // Navegadores que no requieren permiso explícito (Android, Desktop)
                 orientationGranted = true;
+            }
+
+            if (orientationGranted && !orientationState.listenerAttached) {
+                window.addEventListener('deviceorientation', handleDeviceOrientation, { passive: true });
+                window.addEventListener('deviceorientationabsolute', handleDeviceOrientation, { passive: true });
+                orientationState.listenerAttached = true;
             }
         }
 
-        if (orientationGranted) {
-            window.addEventListener('deviceorientation', handleDeviceOrientation, { passive: true });
-            orientationState.listenerAttached = true;
-            orientationState.permissionStatus = 'enabled';
-        } else {
-            // PASO 2: Fallback a DeviceMotion si Orientación falló
-            if (typeof DeviceMotionEvent !== 'undefined') {
-                if (typeof DeviceMotionEvent.requestPermission === 'function') {
-                    try {
-                        const permission = await DeviceMotionEvent.requestPermission();
-                        if (permission === 'granted') {
-                            motionGranted = true;
-                        }
-                    } catch (e) {
-                        console.log("DeviceMotion permission error:", e);
-                    }
-                } else {
-                    motionGranted = true;
+        if (orientationState.motionSupported) {
+            if (motionNeedsPermission) {
+                try {
+                    motionGranted = (await DeviceMotionEvent.requestPermission()) === 'granted';
+                } catch (error) {
+                    console.warn('DeviceMotion permission error', error);
                 }
+            } else {
+                motionGranted = true;
             }
 
-            if (motionGranted) {
+            if (motionGranted && !orientationState.motionListenerAttached) {
                 window.addEventListener('devicemotion', handleDeviceMotion, { passive: true });
                 orientationState.motionListenerAttached = true;
-                orientationState.permissionStatus = 'enabled';
-            } else {
-                orientationState.permissionStatus = 'denied';
             }
         }
 
         if (orientationGranted || motionGranted) {
-            // Resetear calibración al rotar pantalla
-            window.addEventListener('orientationchange', () => {
-                orientationState.neutralBeta = null;
-                orientationState.neutralGamma = null;
-                motionState.neutralX = null;
-                motionState.neutralY = null;
-                hasReceivedValidOrientation = false;
-            }, { passive: true });
+            orientationState.permissionStatus = 'enabled';
+            if (!orientationState.orientationChangeHandlerAttached) {
+                window.addEventListener('orientationchange', () => {
+                    orientationState.neutralBeta = null;
+                    orientationState.neutralGamma = null;
+                    motionState.neutralX = null;
+                    motionState.neutralY = null;
+                    hasReceivedValidOrientation = false;
+                }, { passive: true });
+                orientationState.orientationChangeHandlerAttached = true;
+            }
+        } else {
+            orientationState.permissionStatus = 'denied';
         }
 
         refreshMotionPermissionPrompt();
