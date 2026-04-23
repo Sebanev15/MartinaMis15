@@ -670,7 +670,7 @@
         }
 
         @media (max-width: 600px) {
-            .fullscreen-letter.is-visible .letter { transform: scale(2.95); }
+            .fullscreen-letter.is-visible .letter { transform: scale(1.35); }
         }
 
         @media (min-width: 1200px) {
@@ -1475,28 +1475,13 @@
                 box-shadow: 0 8px 22px rgba(0,0,0,0.44);
             }
 
-            /* Mobile lite: menos capas y filtros para priorizar fluidez. */
-            .particles,
-            .magic-glow,
-            .light-rays,
-            .inner-glow {
-                display: none !important;
-            }
-
+            /* Habilitar efectos mágicos en mobile pero limitados a menos cantidad visual */
             #stars-container .moon-svg {
                 display: block !important;
                 filter: none !important;
                 opacity: 0.9;
             }
 
-            .particle,
-            .magic-glow,
-            .light-rays,
-            .inner-glow {
-                animation: none !important;
-                filter: none !important;
-                transition: none !important;
-            }
 
             .photo-placeholder {
                 height: 280px;
