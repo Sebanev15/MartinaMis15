@@ -977,6 +977,23 @@
             .envelope.open .letter { animation: none !important; }
         }
 
+        body.lite-motion .envelope,
+        body.lite-motion .levitate-wrap,
+        body.lite-motion .particle,
+        body.lite-motion .magic-glow,
+        body.lite-motion .light-rays,
+        body.lite-motion .inner-glow {
+            animation: none !important;
+        }
+
+        body.lite-motion #stars-container,
+        body.lite-motion #main-content {
+            transform: none !important;
+        }
+
+        body.lite-motion .tap-instruction {
+            animation: none;
+        }
 
         .tap-instruction {
             color: var(--silver);
@@ -1800,6 +1817,14 @@
         observeElements();
     }
 
+    function openInvitationLite() {
+        const overlay = document.getElementById('welcome-overlay');
+        if (overlay) {
+            overlay.classList.add('opened');
+        }
+        revealMainContent();
+    }
+
     function syncFullscreenLetter() {
         const fullscreen = document.querySelector('#welcome-overlay .fullscreen-letter');
         const src = document.querySelector('#welcome-overlay .envelope .letter-content');
@@ -2053,6 +2078,7 @@
     const starContainerNode = document.getElementById('stars-container');
     const reduceMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
     const mobileLiteQuery = window.matchMedia('(max-width: 768px)');
+    const pointerFineQuery = window.matchMedia('(pointer: fine)');
     const parallaxState = {
         targetX: 0,
         targetY: 0,
@@ -2062,13 +2088,27 @@
         startTime: performance.now()
     };
 
+    function isLowPowerDevice() {
+        const mem = navigator.deviceMemory || 0;
+        const cores = navigator.hardwareConcurrency || 0;
+        const saveData = navigator.connection && navigator.connection.saveData;
+
+        return reduceMotionQuery.matches
+            || Boolean(saveData)
+            || (mem > 0 && mem <= 3)
+            || (cores > 0 && cores <= 3);
+    }
+
     function clamp(value, min, max) {
         return Math.min(max, Math.max(min, value));
     }
 
     function isParallaxActive() {
         return Boolean(starContainerNode)
-            && !reduceMotionQuery.matches;
+            && !reduceMotionQuery.matches
+            && !mobileLiteQuery.matches
+            && pointerFineQuery.matches
+            && !isLowPowerDevice();
     }
 
     function applyParallaxFrame(now) {
@@ -2110,11 +2150,31 @@
     parallaxState.rafId = requestAnimationFrame(applyParallaxFrame);
 
     const envelopeNode = document.querySelector('.envelope');
-    envelopeNode.addEventListener('click', openInvitation);
+    const useLiteMotion = isLowPowerDevice() || mobileLiteQuery.matches;
+
+    if (useLiteMotion) {
+        document.body.classList.add('lite-motion');
+        const tapInstruction = document.querySelector('.tap-instruction');
+        if (tapInstruction) {
+            tapInstruction.textContent = 'Toca para continuar';
+        }
+    }
+
+    envelopeNode.addEventListener('click', () => {
+        if (useLiteMotion) {
+            openInvitationLite();
+        } else {
+            openInvitation();
+        }
+    });
     envelopeNode.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' || e.key === ' ') {
             e.preventDefault();
-            openInvitation();
+            if (useLiteMotion) {
+                openInvitationLite();
+            } else {
+                openInvitation();
+            }
         }
     });
 
