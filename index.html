@@ -995,6 +995,14 @@
             animation: none;
         }
 
+        body.lite-motion #welcome-overlay {
+            transition: opacity 0.8s ease, visibility 0.8s ease;
+        }
+
+        body.lite-motion #welcome-overlay.lite-exit {
+            opacity: 0;
+        }
+
         .tap-instruction {
             color: var(--silver);
             margin-top: 40px;
@@ -1819,10 +1827,22 @@
 
     function openInvitationLite() {
         const overlay = document.getElementById('welcome-overlay');
+        const exitDelayMs = 800;
+        const revealDelayMs = 320;
+
         if (overlay) {
-            overlay.classList.add('opened');
+            overlay.classList.add('lite-exit');
         }
-        revealMainContent();
+
+        setTimeout(() => {
+            revealMainContent();
+        }, revealDelayMs);
+
+        setTimeout(() => {
+            if (overlay) {
+                overlay.classList.add('opened');
+            }
+        }, exitDelayMs);
     }
 
     function syncFullscreenLetter() {
