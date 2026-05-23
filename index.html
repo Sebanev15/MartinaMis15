@@ -22,6 +22,15 @@
 </head>
 <body>
     <div id="welcome-overlay">
+        <div class="ambient-glows" aria-hidden="true">
+            <span class="ambient-glow glow-1"></span>
+            <span class="ambient-glow glow-2"></span>
+            <span class="ambient-glow glow-3"></span>
+            <span class="ambient-glow glow-4"></span>
+            <span class="ambient-glow glow-5"></span>
+            <span class="ambient-glow glow-6"></span>
+        </div>
+
         <div class="invitation-prompt">
             Tienes una invitación especial<br>
             <span style="display: inline-block; margin-top: 10px; font-size: 0.9em;">Presiona la carta para abrir</span>
@@ -94,15 +103,14 @@
     <div id="stars-container"></div>
     <button id="motion-permission-btn" type="button">Activar movimiento</button>
 
-    <main id="main-content">
+    <main id="main-content" style="visibility: visible !important; opacity: 1 !important; z-index: 100 !important;">
         <section class="hero">
             <div class="hero-content">
                 <h3>Mis 15 Años</h3>
                 <h1>Martu</h1>
                 <div class="decorative-line"></div>
                 <p>
-                    "Una noche mágica donde los sueños se hacen realidad bajo la luz de la luna.<br>
-                    Te espero en mi día especial para celebrar juntos."
+                    "texto añadir inicio"
                 </p>
             </div>
         </section>
@@ -147,10 +155,10 @@
         <div class="photo-placeholder"></div>
 
         <section class="info-section fade-in-on-scroll">
-            <h2>Dress Code</h2>
+            <h2>Dress Code / Codigo de vestimenta</h2>
             <p style="letter-spacing: 4px; color: var(--gold); font-weight: 600; font-size: 1.3rem; margin-bottom: 15px;">FORMAL ELEGANTE</p>
-            <p>Te espero con tu mejor gala para disfrutar de esta noche mágica.<br>
-            <span style="font-size: 0.85rem; opacity: 0.8;">Detalles que brillan como estrellas</span></p>
+            <p>Descripcion vestimenta<br>
+            <span style="font-size: 0.85rem; opacity: 0.8;">Mas detalles</span></p>
         </section>
 
         <div class="photo-placeholder"></div>
@@ -162,7 +170,7 @@
                 <p><strong>BROU - Caja de Ahorro $</strong></p>
                 <p><strong>Cuenta:</strong> 1234567-8</p>
                 <p><strong>Titular:</strong> Martina Ruiz</p>
-                <p class="alias">Alias: MARTU.15.RUIZ</p>
+                <p class="alias">Alias: alias</p>
             </div>
         </section>
 
@@ -207,7 +215,7 @@
             </form>
         </section>
 
-        <footer>Te espero para celebrar</footer>
+        <footer>Texto final</footer>
     </main>
 
     <!-- ===== JAVASCRIPT MODULARIZADO ===== -->

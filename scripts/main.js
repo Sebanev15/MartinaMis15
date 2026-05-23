@@ -1,9 +1,11 @@
 // ===== MAIN - INICIALIZACIÓN DE LA APLICACIÓN =====
 import { createStars } from './stars.js';
 import { initParallax } from './parallax.js';
-import { openInvitation, openInvitationLite, revealMainContent } from './envelope-handlers.js';
+import { initMoonScrollParallax } from './moon-scroll-parallax.js';
+import { initDynamicSparkles } from './dynamic-sparkles.js';
+import { openInvitation, openInvitationLite } from './envelope-handlers.js';
 import { updateCountdown } from './countdown.js';
-import { observeElements } from './scroll-observer.js';
+import './scroll-observer.js';
 import { initCustomSelects } from './custom-select.js';
 import { handleFormSubmit } from './form-handler.js';
 import { isLowPowerDevice, isMobileDevice } from './utils.js';
@@ -19,6 +21,12 @@ function initializeApp() {
 
     // Inicializar parallax automático
     initParallax();
+
+    // Inicializar parallax de la luna en scroll
+    initMoonScrollParallax();
+
+    // Inicializar sparkles dinámicos
+    initDynamicSparkles();
 
     // Detectar dispositivo de bajo poder
     const useLiteMotion = isLowPowerDevice() || isMobileDevice();
@@ -59,6 +67,7 @@ function initializeApp() {
 
     // Inicializar custom selects
     initCustomSelects();
+
 
     // Configurar manejador del formulario
     const form = document.querySelector('form');

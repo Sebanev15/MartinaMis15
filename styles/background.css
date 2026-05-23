@@ -16,12 +16,13 @@
 
 #stars-container {
     position: fixed;
-    top: -10%;
-    left: -10%;
-    width: 120%;
-    height: 120%;
+    top: -15%;
+    left: -15%;
+    width: 130%;
+    height: 130%;
     z-index: 1;
     pointer-events: none;
+    will-change: transform;
 }
 
 .star-dot {
@@ -29,6 +30,7 @@
     background: white;
     border-radius: 50%;
     animation: twinkle 3s ease-in-out infinite;
+    box-shadow: 0 0 2px rgba(255, 255, 255, 0.8);
 }
 
 @keyframes twinkle {
@@ -36,9 +38,67 @@
     50% { opacity: 1; }
 }
 
-.moon-svg {
-    position: absolute;
-    filter: drop-shadow(0 0 30px rgba(212, 175, 55, 0.4));
-    opacity: 0.85;
+/* ===== SPARKLES DINÁMICOS - MEJORADOS ===== */
+@keyframes sparkle-float {
+    0% {
+        opacity: 0;
+        transform: translate(var(--start-x), var(--start-y)) scale(0.05) rotate(0deg);
+        filter: blur(4px) brightness(0.2);
+    }
+    10% {
+        opacity: 0.6;
+        transform: translate(var(--start-x), var(--start-y)) scale(0.4) rotate(45deg);
+        filter: blur(1.8px) brightness(0.85);
+    }
+    30% {
+        opacity: 1;
+        transform: translate(var(--start-x), var(--start-y)) scale(1.1) rotate(120deg);
+        filter: blur(0.2px) brightness(1.6);
+    }
+    60% {
+        opacity: 0.85;
+        transform: translate(var(--end-x), var(--end-y)) scale(0.8) rotate(220deg);
+        filter: blur(0.8px) brightness(1.25);
+    }
+    85% {
+        opacity: 0.4;
+        transform: translate(var(--end-x), var(--end-y)) scale(0.3) rotate(300deg);
+        filter: blur(2px) brightness(0.95);
+    }
+    100% {
+        opacity: 0;
+        transform: translate(var(--end-x), var(--end-y)) scale(0) rotate(360deg);
+        filter: blur(4px) brightness(0.25);
+    }
 }
 
+.dynamic-sparkle {
+    will-change: transform, opacity;
+}
+
+.moon-svg {
+    position: absolute;
+    filter: drop-shadow(0 0 40px rgba(212, 175, 55, 0.35))
+            drop-shadow(0 8px 35px rgba(0, 0, 0, 0.5))
+            drop-shadow(0 2px 8px rgba(212, 175, 55, 0.25));
+    opacity: 0.92;
+    transition: transform 0.05s ease-out;
+    animation: moon-breathe 6s ease-in-out infinite;
+}
+
+@keyframes moon-breathe {
+    0%, 100% {
+        transform: scale(1);
+        opacity: 0.92;
+    }
+    50% {
+        transform: scale(1.08);
+        opacity: 0.98;
+    }
+}
+
+/* Animación suave de parallax en scroll */
+@keyframes moon-parallax {
+    0% { transform: translateY(0) translateX(0) scale(1); }
+    100% { transform: translateY(0) translateX(0) scale(1); }
+}

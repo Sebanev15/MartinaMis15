@@ -2,6 +2,7 @@
 @media (prefers-reduced-motion: reduce) {
     .magic-glow,
     .particle,
+    .ambient-glow,
     .envelope.open.is-opening .magic-glow,
     .envelope.open .light-rays {
         animation: none !important;
@@ -27,7 +28,8 @@ body.lite-motion .levitate-wrap,
 body.lite-motion .particle,
 body.lite-motion .magic-glow,
 body.lite-motion .light-rays,
-body.lite-motion .inner-glow {
+body.lite-motion .inner-glow,
+body.lite-motion .ambient-glow {
     animation: none !important;
 }
 

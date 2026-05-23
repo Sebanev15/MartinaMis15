@@ -14,7 +14,6 @@ export function revealMainContent() {
  */
 export function openInvitationLite() {
     const overlay = document.getElementById('welcome-overlay');
-    const mainContent = document.getElementById('main-content');
     
     // Timing mejorado para transición suave en móvil
     const exitDurationMs = 900;  // Aumentado de 800 para más suavidad

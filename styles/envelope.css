@@ -46,23 +46,46 @@
     background: var(--bg-gradient-2);
     cursor: pointer;
     touch-action: manipulation;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-    transition: box-shadow 0.3s ease;
+    box-shadow:
+        0 15px 45px rgba(0,0,0,0.7),
+        0 8px 25px rgba(0,0,0,0.5),
+        inset 0 1px 0 rgba(255,255,255,0.1);
+    transition: box-shadow 0.3s ease, transform 0.2s ease;
     transform-style: preserve-3d;
     overflow: hidden;
     animation: quakeBurst 4.2s linear infinite;
+    border-radius: 2px;
 }
 
 .envelope.open {
     overflow: visible;
-    animation: none !important;
-    transition: transform 0.8s ease;
+    animation: envelope-open-natural 1s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
     transform: scale(1);
 }
 
 .envelope.open:hover {
     animation: none !important;
     transform: translateY(0) rotate(0deg) !important;
+}
+
+@keyframes envelope-open-natural {
+    0% {
+        transform: scale(1) rotateX(0deg) translateY(0);
+        opacity: 1;
+    }
+    40% {
+        transform: scale(1.05) rotateX(-5deg) translateY(-15px);
+        opacity: 1;
+    }
+    70% {
+        transform: scale(0.8) rotateX(-15deg) translateY(-100px);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(0.2) rotateX(-25deg) translateY(-400px);
+        opacity: 0;
+        pointer-events: none;
+    }
 }
 
 .levitate-wrap {
@@ -77,39 +100,61 @@
 
 @keyframes levitate {
     0%, 100% {
-        transform: translateY(0);
+        transform: translateY(0) scale(1);
+        filter: brightness(1);
+    }
+    25% {
+        transform: translateY(-12px) scale(1.01);
+        filter: brightness(1.02);
     }
     50% {
-        transform: translateY(-25px);
+        transform: translateY(-28px) scale(1.015);
+        filter: brightness(1.04);
+    }
+    75% {
+        transform: translateY(-14px) scale(1.008);
+        filter: brightness(1.02);
     }
 }
 
 @keyframes quakeBurst {
     0%, 8%, 20%, 35%, 43%, 55%, 100% {
-        transform: translateX(0) rotate(0deg);
+        transform: translateX(0) rotate(0deg) scale(1);
     }
-    9% { transform: translateX(-5px) rotate(-4deg); }
-    11% { transform: translateX(5px) rotate(4deg); }
-    13% { transform: translateX(-6px) rotate(-4deg); }
-    15% { transform: translateX(6px) rotate(4deg); }
-    17% { transform: translateX(-4px) rotate(-2deg); }
-    19% { transform: translateX(3px) rotate(2deg); }
-    36% { transform: translateX(5px) rotate(4deg); }
-    38% { transform: translateX(-6px) rotate(-4deg); }
-    40% { transform: translateX(4px) rotate(3deg); }
-    42% { transform: translateX(-3px) rotate(-2deg); }
+    9% { transform: translateX(-5px) rotate(-4deg) scale(0.99); }
+    11% { transform: translateX(5px) rotate(4deg) scale(0.99); }
+    13% { transform: translateX(-6px) rotate(-4deg) scale(0.98); }
+    15% { transform: translateX(6px) rotate(4deg) scale(0.98); }
+    17% { transform: translateX(-4px) rotate(-2deg) scale(0.995); }
+    19% { transform: translateX(3px) rotate(2deg) scale(0.995); }
+    36% { transform: translateX(5px) rotate(4deg) scale(0.99); }
+    38% { transform: translateX(-6px) rotate(-4deg) scale(0.98); }
+    40% { transform: translateX(4px) rotate(3deg) scale(0.99); }
+    42% { transform: translateX(-3px) rotate(-2deg) scale(0.99); }
 }
 
 @keyframes envelope-levitate-mobile {
-    0%, 100% { transform: translateY(0) rotate(0deg); }
-    45% { transform: translateY(-18px) rotate(0.4deg); }
-    70% { transform: translateY(-10px) rotate(-0.3deg); }
+    0%, 100% {
+        transform: translateY(0) rotate(0deg) scale(1);
+        filter: brightness(1);
+    }
+    45% {
+        transform: translateY(-22px) rotate(0.4deg) scale(1.01);
+        filter: brightness(1.03);
+    }
+    70% {
+        transform: translateY(-12px) rotate(-0.3deg) scale(1.005);
+        filter: brightness(1.01);
+    }
 }
 
 @media (hover: hover) and (pointer: fine) {
     .envelope:hover {
         animation: shake-hard 0.36s ease-in-out infinite;
-        box-shadow: 0 15px 40px rgba(212, 175, 55, 0.4);
+        box-shadow:
+            0 20px 60px rgba(212, 175, 55, 0.5),
+            0 10px 35px rgba(212, 175, 55, 0.3),
+            inset 0 1px 0 rgba(255,255,255,0.2);
     }
 }
 

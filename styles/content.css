@@ -1,12 +1,15 @@
 /* ===== CONTENIDO PRINCIPAL ===== */
 #main-content {
     position: relative;
-    z-index: 10;
+    z-index: 100;
     width: 100%;
-    visibility: hidden;
-    opacity: 0;
-    transition: opacity 1s ease-in, visibility 1s ease-in;
+    visibility: visible !important;
+    opacity: 1 !important;
+    transition: none;
     transform: translateZ(0);
+    background: rgba(10, 14, 27, 0.6);
+    padding: 0;
+    display: block;
 }
 
 #main-content.show {
@@ -21,7 +24,8 @@
     justify-content: center;
     align-items: center;
     text-align: center;
-    padding: 40px 20px;
+    padding: 0 20px;
+    margin: 0;
     position: relative;
     overflow: hidden;
 }
@@ -158,16 +162,22 @@
 }
 
 .info-section {
-    padding: 60px 20px;
+    padding: 80px 20px;
     text-align: center;
     max-width: 800px;
-    margin: 0 auto;
+    margin: 40px auto;
     animation: fadeInUp 0.8s ease-out;
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.03), rgba(217, 70, 166, 0.06));
-    border: 1px solid rgba(212, 175, 55, 0.18);
+    background: linear-gradient(135deg,
+        rgba(26, 15, 58, 0.75) 0%,
+        rgba(13, 27, 42, 0.75) 100%);
+    border: 2px solid rgba(212, 175, 55, 0.3);
     border-radius: 18px;
-    box-shadow: 0 16px 30px rgba(8, 10, 20, 0.35);
-    backdrop-filter: blur(8px);
+    box-shadow:
+        0 16px 30px rgba(8, 10, 20, 0.5),
+        inset 0 1px 0 rgba(255,255,255,0.1);
+    backdrop-filter: blur(12px);
+    position: relative;
+    z-index: 12;
 }
 
 .info-section h2 {
