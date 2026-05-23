@@ -25,8 +25,8 @@ function initializeApp() {
     // Inicializar parallax de la luna en scroll
     initMoonScrollParallax();
 
-    // Inicializar sparkles dinámicos
-    initDynamicSparkles();
+    // Inicializar sparkles dinámicos (deshabilitado - no se renderizaba correctamente)
+    // initDynamicSparkles();
 
     // Detectar dispositivo de bajo poder
     const useLiteMotion = isLowPowerDevice() || isMobileDevice();

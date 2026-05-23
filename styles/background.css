@@ -29,52 +29,88 @@
     position: absolute;
     background: white;
     border-radius: 50%;
-    animation: twinkle 3s ease-in-out infinite;
     box-shadow: 0 0 2px rgba(255, 255, 255, 0.8);
 }
 
-@keyframes twinkle {
+/* Animaciones de centelleo realistas con múltiples variaciones */
+@keyframes twinkle-subtle {
+    0%, 100% { opacity: 0.2; }
+    50% { opacity: 0.5; }
+}
+
+@keyframes twinkle-medium {
     0%, 100% { opacity: 0.3; }
-    50% { opacity: 1; }
+    25% { opacity: 0.7; }
+    50% { opacity: 0.4; }
+    75% { opacity: 0.8; }
+}
+
+@keyframes twinkle-bright {
+    0%, 100% { opacity: 0.4; }
+    20% { opacity: 0.9; }
+    40% { opacity: 0.5; }
+    60% { opacity: 1; }
+    80% { opacity: 0.6; }
 }
 
 /* ===== SPARKLES DINÁMICOS - MEJORADOS ===== */
 @keyframes sparkle-float {
     0% {
         opacity: 0;
-        transform: translate(var(--start-x), var(--start-y)) scale(0.05) rotate(0deg);
-        filter: blur(4px) brightness(0.2);
+        transform: translate(var(--start-x), var(--start-y)) scale(0.1);
+        filter: blur(3.5px) brightness(0.3);
     }
-    10% {
-        opacity: 0.6;
-        transform: translate(var(--start-x), var(--start-y)) scale(0.4) rotate(45deg);
-        filter: blur(1.8px) brightness(0.85);
+    15% {
+        opacity: 0.55;
+        transform: translate(var(--start-x), var(--start-y)) scale(0.6);
+        filter: blur(1.4px) brightness(0.95);
     }
-    30% {
+    35% {
         opacity: 1;
-        transform: translate(var(--start-x), var(--start-y)) scale(1.1) rotate(120deg);
-        filter: blur(0.2px) brightness(1.6);
+        transform: translate(var(--start-x), var(--start-y)) scale(1.05);
+        filter: blur(0.2px) brightness(1.45);
     }
-    60% {
-        opacity: 0.85;
-        transform: translate(var(--end-x), var(--end-y)) scale(0.8) rotate(220deg);
-        filter: blur(0.8px) brightness(1.25);
+    65% {
+        opacity: 0.75;
+        transform: translate(var(--end-x), var(--end-y)) scale(0.85);
+        filter: blur(0.6px) brightness(1.15);
     }
-    85% {
-        opacity: 0.4;
-        transform: translate(var(--end-x), var(--end-y)) scale(0.3) rotate(300deg);
-        filter: blur(2px) brightness(0.95);
+    90% {
+        opacity: 0.35;
+        transform: translate(var(--end-x), var(--end-y)) scale(0.4);
+        filter: blur(1.8px) brightness(0.8);
     }
     100% {
         opacity: 0;
-        transform: translate(var(--end-x), var(--end-y)) scale(0) rotate(360deg);
-        filter: blur(4px) brightness(0.25);
+        transform: translate(var(--end-x), var(--end-y)) scale(0.05);
+        filter: blur(3.5px) brightness(0.3);
     }
 }
 
 .dynamic-sparkle {
+    position: absolute;
+    background:
+        radial-gradient(circle at 50% 50%,
+            rgba(255, 255, 255, 1) 0%,
+            rgba(255, 255, 255, 0.9) 18%,
+            rgba(255, 255, 255, 0.5) 35%,
+            rgba(255, 255, 255, 0) 55%);
+    clip-path: polygon(
+        50% 0%,           /* Punta superior */
+        61% 35%,
+        100% 50%,         /* Punta derecha */
+        61% 65%,
+        50% 100%,         /* Punta inferior */
+        39% 65%,
+        0% 50%,           /* Punta izquierda */
+        39% 35%
+    );
+    filter: drop-shadow(0 0 6px rgba(212, 175, 55, 0.8))
+            drop-shadow(0 0 12px rgba(212, 175, 55, 0.4));
     will-change: transform, opacity;
+    transform: translate(-50%, -50%);
 }
+
 
 .moon-svg {
     position: absolute;

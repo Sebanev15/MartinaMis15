@@ -30,7 +30,7 @@ export function initDynamicSparkles() {
         const y = Math.random() * 100; // Cambié de 60% a 100%
         
         // Tamaño aleatorio (más grandes ahora)
-        const size = 4 + Math.random() * 12; // De 3px a 15px
+        const size = 3 + Math.random() * 9; // 3px a 12px
         
         sparkle.style.cssText = `
             position: absolute;
@@ -38,39 +38,23 @@ export function initDynamicSparkles() {
             top: ${y}%;
             width: ${size}px;
             height: ${size}px;
-            background: 
-                linear-gradient(45deg, 
-                    rgba(255,255,255,0) 0%, 
-                    rgba(255,255,255,0) calc(50% - 1px), 
-                    rgba(255,255,255,1) 50%, 
-                    rgba(255,255,255,0) calc(50% + 1px), 
-                    rgba(255,255,255,0) 100%),
-                linear-gradient(-45deg, 
-                    rgba(255,255,255,0) 0%, 
-                    rgba(255,255,255,0) calc(50% - 1px), 
-                    rgba(255,255,255,1) 50%, 
-                    rgba(255,255,255,0) calc(50% + 1px), 
-                    rgba(255,255,255,0) 100%);
             opacity: 0;
-            filter: blur(0px);
-            box-shadow: 
-                0 0 ${size * 2}px rgba(255, 255, 255, 0.9),
-                0 0 ${size * 3}px rgba(212, 175, 55, 0.7),
-                0 0 ${size * 5}px rgba(255, 220, 120, 0.4);
         `;
+
+        sparkle.style.setProperty('--sparkle-size', `${size}px`);
 
         sparklesContainer.appendChild(sparkle);
 
         // Duración variable (2-5 segundos)
-        const duration = 2 + Math.random() * 3;
+        const duration = 2.8 + Math.random() * 2.7;
         // Retraso antes de empezar
-        const delay = Math.random() * 1;
+        const delay = Math.random() * 1.2;
         
         // Crear animación personalizada
         const startX = Math.random() * 100;
         const startY = Math.random() * 100;
-        const endX = startX + (Math.random() * 40 - 20); // Movimiento ±20%
-        const endY = startY + (Math.random() * 40 - 20);
+        const endX = startX + (Math.random() * 24 - 12); // Movimiento ±12%
+        const endY = startY + (Math.random() * 24 - 12);
 
         sparkle.style.animation = `
             sparkle-float ${duration}s ease-in-out ${delay}s forwards
@@ -98,4 +82,3 @@ export function initDynamicSparkles() {
         setTimeout(() => createSparkle(), i * 400); // Intervalo de 400ms
     }
 }
-

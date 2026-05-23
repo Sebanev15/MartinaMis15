@@ -8,32 +8,45 @@ export function revealMainContent() {
 
 /**
  * Transición mejorada para móvil: suave y gradual con múltiples fases
- * Fase 1 (0-300ms): Fade leve + reducción de backdrop-filter
- * Fase 2 (300-700ms): Fade significativo + escala menor del overlay
- * Fase 3 (700-900ms): Fade final + blur completo
+ * Fase 1 (0-250ms): Fade leve + reducción de backdrop-filter
+ * Fase 2 (250-600ms): Fade significativo + escala menor del overlay
+ * Fase 3 (600-1000ms): Fade final + blur completo + contenido aparece
  */
 export function openInvitationLite() {
     const overlay = document.getElementById('welcome-overlay');
+    const mainContent = document.getElementById('main-content');
     
-    // Timing mejorado para transición suave en móvil
-    const exitDurationMs = 900;  // Aumentado de 800 para más suavidad
-    const revealDelayMs = 320;   // Mantener consistencia
+    // Timing escalonado para transición más suave
+    const phase1Duration = 250;   // Fade inicial suave
+    const phase2Duration = 350;   // Fade intermedio
+    const phase3Duration = 400;   // Fade final + reveal
+    const totalDuration = phase1Duration + phase2Duration + phase3Duration;
 
     if (overlay) {
         overlay.classList.add('lite-exit');
     }
 
-    // Revelar contenido principal con delay staggered
+    // Fase 1: Iniciar fade leve (asegura que se vea el cambio)
     setTimeout(() => {
-        revealMainContent();
-    }, revealDelayMs);
+        if (overlay) {
+            overlay.style.transition = `opacity ${phase1Duration}ms cubic-bezier(0.4, 0, 0.2, 1), 
+                                                   backdrop-filter ${phase1Duration}ms cubic-bezier(0.4, 0, 0.2, 1)`;
+        }
+    }, 10);
 
-    // Cerrar overlay completamente
+    // Fase 2: Revelar contenido principal de forma escalonada
+    setTimeout(() => {
+        if (mainContent) {
+            mainContent.classList.add('show');
+        }
+    }, phase1Duration + 100);
+
+    // Fase 3: Cerrar overlay completamente
     setTimeout(() => {
         if (overlay) {
             overlay.classList.add('opened');
         }
-    }, exitDurationMs);
+    }, totalDuration);
 }
 
 /**
