@@ -155,10 +155,9 @@
     visibility: hidden;
     transition: opacity 0.35s ease, visibility 0.35s ease;
     transform: none;
-    background: linear-gradient(135deg,
-        rgba(10, 14, 39, 0.98) 0%,
-        rgba(26, 15, 58, 0.98) 50%,
-        rgba(13, 27, 42, 0.98) 100%);
+    background: rgba(10, 14, 39, 0.28);
+    backdrop-filter: blur(10px) saturate(120%);
+    -webkit-backdrop-filter: blur(10px) saturate(120%);
 }
 
 #welcome-overlay .fullscreen-letter.is-visible {
@@ -225,4 +224,3 @@
         left: 15px;
     }
 }
-

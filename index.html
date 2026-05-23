@@ -38,7 +38,7 @@
 
         <div class="envelope-wrapper">
             <div class="levitate-wrap">
-                <div class="envelope" role="button" tabindex="0" aria-label="Abrir invitacion">
+                <div class="envelope" role="button" tabindex="0" aria-label="Abrir invitación">
                     <div class="back"></div>
                     <div class="inner-glow"></div>
                     <div class="light-rays"></div>
@@ -103,7 +103,7 @@
     <div id="stars-container"></div>
     <button id="motion-permission-btn" type="button">Activar movimiento</button>
 
-    <main id="main-content" style="visibility: visible !important; opacity: 1 !important; z-index: 100 !important;">
+    <main id="main-content">
         <section class="hero">
             <div class="hero-content">
                 <h3>Mis 15 Años</h3>
@@ -115,7 +115,7 @@
             </div>
         </section>
 
-        <div class="photo-placeholder"></div>
+        <div class="photo-placeholder has-image fade-in-on-scroll"><img src="images/moon.png" alt="Ejemplo de foto 1"></div>
 
         <section class="info-section fade-in-on-scroll">
             <h2>Faltan</h2>
@@ -137,9 +137,10 @@
                     <small>Seg</small>
                 </div>
             </div>
+            <p class="event-date">10 de Octubre de 2026 · 21:30 hs</p>
         </section>
 
-        <div class="photo-placeholder"></div>
+        <div class="photo-placeholder has-image fade-in-on-scroll"><img src="images/moon.png" alt="Ejemplo de foto 2"></div>
 
         <section class="info-section fade-in-on-scroll">
             <h2>Direccion</h2>
@@ -149,10 +150,10 @@
             <div class="map-container">
                 <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3273.242282499795!2d-56.18994722349952!3d-34.87526187189102!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x959f800e1f4e308b%3A0x6f2fc7ef8e89c75!2sSal%C3%B3n%20El%20Portal!5e0!3m2!1ses-419!2suy!4v1779148951291!5m2!1ses-419!2suy" width="100%" height="300" style="border:0;" allowfullscreen="" loading="lazy"></iframe>
             </div>
-            <a href="https://www.google.com/maps/dir/?api=1&destination=Sal%C3%B3n%20El%20Portal%2C%20Alejandro%20Fiol%20de%20Pereda%20esq%2C%20Av.%20Mill%C3%A1n" target="_blank" class="btn-submit btn-small">Cómo llegar</a>
+            <a href="https://www.google.com/maps/dir/?api=1&destination=Sal%C3%B3n%20El%20Portal%2C%20Alejandro%20Fiol%20de%20Pereda%20esq%2C%20Av.%20Mill%C3%A1n" target="_blank" class="btn-map">Cómo llegar</a>
         </section>
 
-        <div class="photo-placeholder"></div>
+        <div class="photo-placeholder has-image fade-in-on-scroll"><img src="images/moon.png" alt="Ejemplo de foto 1"></div>
 
         <section class="info-section fade-in-on-scroll">
             <h2>Dress Code / Codigo de vestimenta</h2>
@@ -161,12 +162,11 @@
             <span style="font-size: 0.85rem; opacity: 0.8;">Mas detalles</span></p>
         </section>
 
-        <div class="photo-placeholder"></div>
+        <div class="photo-placeholder has-image fade-in-on-scroll"><img src="images/moon.png" alt="Ejemplo de foto 2"></div>
 
         <section class="info-section fade-in-on-scroll">
             <h2>Regalos</h2>
             <div class="gift-box">
-                <p>Si deseas colaborar para hacer este día aún más especial:</p>
                 <p><strong>BROU - Caja de Ahorro $</strong></p>
                 <p><strong>Cuenta:</strong> 1234567-8</p>
                 <p><strong>Titular:</strong> Martina Ruiz</p>
@@ -174,7 +174,7 @@
             </div>
         </section>
 
-        <div class="photo-placeholder"></div>
+        <div class="photo-placeholder has-image fade-in-on-scroll"><img src="images/moon.png" alt="Ejemplo de foto 1"></div>
 
         <section class="info-section fade-in-on-scroll">
             <h2>Confirmación</h2>
@@ -194,7 +194,7 @@
                             <option value="3">Yo + 3 acompañantes</option>
                         </select>
                         <div class="custom-select" tabindex="0">
-                            <div class="custom-select-trigger">
+                            <div class="custom-select-trigger" role="button" aria-haspopup="listbox" aria-expanded="false">
                                 <span>Selecciona...</span>
                                 <div class="arrow"></div>
                             </div>
@@ -222,4 +222,3 @@
     <script type="module" src="scripts/main.js"></script>
 </body>
 </html>
-

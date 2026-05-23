@@ -1,6 +1,6 @@
 // ===== CUENTA REGRESIVA =====
 export function updateCountdown() {
-    const target = new Date("Oct 10, 2026 21:30:00").getTime();
+    const target = new Date(2026, 9, 10, 21, 30, 0).getTime();
     const countdownNodes = {
         days: document.getElementById('days'),
         hours: document.getElementById('hours'),
@@ -8,9 +8,25 @@ export function updateCountdown() {
         seconds: document.getElementById('seconds')
     };
 
+    let intervalId = null;
+
+    const renderZeroState = () => {
+        if (countdownNodes.days) countdownNodes.days.innerText = '00';
+        if (countdownNodes.hours) countdownNodes.hours.innerText = '00';
+        if (countdownNodes.minutes) countdownNodes.minutes.innerText = '00';
+        if (countdownNodes.seconds) countdownNodes.seconds.innerText = '00';
+    };
+
     const updateTimer = () => {
         const diff = target - Date.now();
-        if (diff <= 0) return;
+        if (diff <= 0) {
+            renderZeroState();
+            if (intervalId !== null) {
+                clearInterval(intervalId);
+                intervalId = null;
+            }
+            return;
+        }
 
         const days = Math.floor(diff / (1000 * 60 * 60 * 24));
         const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
@@ -25,6 +41,5 @@ export function updateCountdown() {
 
     // Actualizar inmediatamente y luego cada segundo
     updateTimer();
-    setInterval(updateTimer, 1000);
+    intervalId = setInterval(updateTimer, 1000);
 }
-

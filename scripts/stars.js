@@ -1,6 +1,7 @@
 // ===== GENERADOR DE ESTRELLAS Y LUNA (CON IMAGEN) =====
 export function createStars() {
     const starContainer = document.getElementById('stars-container');
+    if (!starContainer) return;
     const isMobile = window.matchMedia('(max-width: 768px)').matches;
     const starCount = isMobile ? 56 : 160;
 
@@ -77,4 +78,3 @@ function createMoonImage(container, config) {
     
     container.appendChild(moonImg);
 }
-

@@ -1,8 +1,8 @@
 // ===== MANEJADORES DE TRANSICIÓN DEL SOBRE =====
 export function revealMainContent() {
     const mainContent = document.getElementById('main-content');
+    if (!mainContent) return;
     mainContent.classList.add('show');
-    document.body.style.overflow = 'auto';
     document.body.classList.add('invitation-open');
 }
 
@@ -65,7 +65,7 @@ export function openInvitation() {
     const srcLetterNode = document.querySelector('#welcome-overlay .envelope .letter');
     let handoffStarted = false;
 
-    if (envelope.classList.contains('open')) return;
+    if (!envelope || envelope.classList.contains('open')) return;
 
     envelope.classList.add('open');
     if (wrapper) wrapper.style.pointerEvents = 'none';
@@ -105,7 +105,9 @@ export function openInvitation() {
                 }, Math.max(overlayFadeDelayMs - mainRevealLeadMs, 0));
 
                 setTimeout(() => {
-                    overlay.classList.add('opened');
+                    if (overlay) {
+                        overlay.classList.add('opened');
+                    }
                 }, overlayFadeDelayMs);
 
                 setTimeout(() => {
@@ -171,4 +173,3 @@ function positionFullscreenLetterFromSource() {
     fullscreen.style.setProperty('--fs-start-y', `${dy}px`);
     fullscreen.style.setProperty('--fs-start-scale', `${scale}`);
 }
-

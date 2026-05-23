@@ -42,22 +42,19 @@ function initializeApp() {
     // Configurar evento de click/tecla en el sobre
     const envelopeNode = document.querySelector('.envelope');
     if (envelopeNode) {
-        envelopeNode.addEventListener('click', () => {
+        const openEnvelope = () => {
             if (useLiteMotion) {
                 openInvitationLite();
             } else {
                 openInvitation();
             }
-        });
+        };
 
+        envelopeNode.addEventListener('click', openEnvelope);
         envelopeNode.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault();
-                if (useLiteMotion) {
-                    openInvitationLite();
-                } else {
-                    openInvitation();
-                }
+                openEnvelope();
             }
         });
     }
@@ -75,4 +72,3 @@ function initializeApp() {
         form.addEventListener('submit', handleFormSubmit);
     }
 }
-

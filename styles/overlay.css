@@ -258,7 +258,6 @@
     visibility: hidden;
     pointer-events: none;
     transition: opacity 1.2s ease, visibility 1.2s ease;
-    display: none;
 }
 
 #welcome-overlay.opened::before {
@@ -358,4 +357,3 @@
     pointer-events: auto;
     transform: translateY(0);
 }
-
