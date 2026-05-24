@@ -331,33 +331,6 @@
     }
 }
 
-#motion-permission-btn {
-    position: fixed;
-    right: 14px;
-    bottom: 14px;
-    z-index: 7000;
-    border: 1px solid rgba(212, 175, 55, 0.55);
-    background: rgba(10, 14, 39, 0.88);
-    color: var(--gold-light);
-    border-radius: 999px;
-    padding: 10px 14px;
-    font-size: 0.78rem;
-    letter-spacing: 0.5px;
-    backdrop-filter: blur(8px);
-    opacity: 0;
-    visibility: hidden;
-    pointer-events: none;
-    transition: opacity 0.25s ease, transform 0.25s ease;
-    transform: translateY(8px);
-}
-
-#motion-permission-btn.is-visible {
-    opacity: 1;
-    visibility: visible;
-    pointer-events: auto;
-    transform: translateY(0);
-}
-
 /* Suppress accent lights during fullscreen handoff to avoid bright stripe */
 #welcome-overlay.suppress-accent::before,
 #welcome-overlay.suppress-accent::after {

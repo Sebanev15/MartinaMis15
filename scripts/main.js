@@ -3,7 +3,7 @@ import { createStars } from './stars.js';
 import { initParallax } from './parallax.js';
 import { initMoonScrollParallax } from './moon-scroll-parallax.js';
 import { initDynamicSparkles } from './dynamic-sparkles.js';
-import { openInvitation, openInvitationLite, openInvitationLiteAnimated } from './envelope-handlers.js';
+import { openInvitation, openInvitationLite, openInvitationLiteAnimated, openInvitationImmediate } from './envelope-handlers.js';
 import { updateCountdown } from './countdown.js';
 import './scroll-observer.js';
 import { initCustomSelects } from './custom-select.js';

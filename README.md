@@ -103,18 +103,19 @@ Invitacion web interactiva para un cumple de 15 años (Martina) con animacion de
 - **Desktop:** Animaciones completas, parallax automático, luna grande (480px)
 - **Mobile:** Modo lite-motion optimizado, luna más pequeña (300px), transiciones suaves
 - **Bajo poder:** Detección automática, desactivación de animaciones complejas
+- **Hero móvil:** Usa `100svh` como mínimo para evitar saltos por la barra del navegador en Safari/iPhone
+- **Imágenes decorativas:** Carga diferida con `loading="lazy"` y `decoding="async"` en los placeholders
 
 ---
 
 ### HTML Sections (orden en DOM)
 1. `#welcome-overlay`: Overlay inicial con sobre animado, instrucción de tap y overlay fullscreen para la carta.
 2. `.nebula-bg`: Fondo fijo con gradientes nebulosos.
-3. `#stars-container`: Contenedor para estrellas y lunas (SVG + divs).
-4. `#motion-permission-btn`: Botón para activar parallax (oculto por defecto).
-5. `#main-content`:
+3. `#stars-container`: Contenedor para estrellas y luna (PNG + divs).
+4. `#main-content`:
    - `.hero`: Bienvenida con h1, h3, línea decorativa y párrafo.
    - `.info-section`: Secciones de info (Faltan, Dirección, Dress Code, Regalos, Confirmación).
-   - `.photo-placeholder`: Espacios para fotos (vacíos).
+   - `.photo-placeholder`: Espacios para fotos con imágenes decorativas de carga diferida.
    - `.map-container`: iframe embebido de Google Maps.
    - `form`: Formulario con campos de nombre, acompañantes (custom-select), menú y botón submit.
 
@@ -157,6 +158,10 @@ Invitacion web interactiva para un cumple de 15 años (Martina) con animacion de
 - Triggered: click en sobre (mobile o bajo poder).
 - Flujo simplificado: oculta overlay rápidamente sin animación compleja.
 - Resultado: transición suave a contenido sin saltos de texto.
+
+#### `openInvitationImmediate()`
+- Triggered: modo `immediate` por `prefers-reduced-motion`, `saveData` o dispositivos muy limitados.
+- Revela el contenido sin animación y evita depender de la secuencia visual del sobre.
 
 #### `isLowPowerDevice()`
 - Detecta dispositivos de baja potencia y preferencias del usuario.
@@ -821,8 +826,8 @@ Algunos datos se actualizan automáticamente mediante JavaScript. Para cambiarlo
 
 ### Fecha y hora del evento
 - **Ubicación:** Variable `eventDate` en `scripts/countdown.js`
-- **Formato:** `new Date('YYYY-MM-DD HH:mm:ss')`
-- **Ejemplo:** `new Date('2026-10-10 21:30:00')`
+- **Formato:** `Date.UTC(YYYY, MMIndex, DD, HH, mm, ss)`
+- **Ejemplo:** `Date.UTC(2026, 9, 11, 0, 30, 0)` para 10/10/2026 21:30 en Montevideo
 
 ### Google Apps Script (Formulario)
 - **Ubicación:** Variable `scriptURL` en `scripts/form-handler.js`

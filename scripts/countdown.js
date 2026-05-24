@@ -1,6 +1,6 @@
 // ===== CUENTA REGRESIVA =====
 export function updateCountdown() {
-    const target = new Date(2026, 9, 10, 21, 30, 0).getTime();
+    const target = Date.UTC(2026, 9, 11, 0, 30, 0);
     const countdownNodes = {
         days: document.getElementById('days'),
         hours: document.getElementById('hours'),
@@ -11,10 +11,10 @@ export function updateCountdown() {
     let intervalId = null;
 
     const renderZeroState = () => {
-        if (countdownNodes.days) countdownNodes.days.innerText = '00';
-        if (countdownNodes.hours) countdownNodes.hours.innerText = '00';
-        if (countdownNodes.minutes) countdownNodes.minutes.innerText = '00';
-        if (countdownNodes.seconds) countdownNodes.seconds.innerText = '00';
+        if (countdownNodes.days) countdownNodes.days.textContent = '00';
+        if (countdownNodes.hours) countdownNodes.hours.textContent = '00';
+        if (countdownNodes.minutes) countdownNodes.minutes.textContent = '00';
+        if (countdownNodes.seconds) countdownNodes.seconds.textContent = '00';
     };
 
     const updateTimer = () => {
@@ -33,10 +33,10 @@ export function updateCountdown() {
         const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
         const seconds = Math.floor((diff % (1000 * 60)) / 1000);
 
-        if (countdownNodes.days) countdownNodes.days.innerText = String(days).padStart(2, '0');
-        if (countdownNodes.hours) countdownNodes.hours.innerText = String(hours).padStart(2, '0');
-        if (countdownNodes.minutes) countdownNodes.minutes.innerText = String(minutes).padStart(2, '0');
-        if (countdownNodes.seconds) countdownNodes.seconds.innerText = String(seconds).padStart(2, '0');
+        if (countdownNodes.days) countdownNodes.days.textContent = String(days).padStart(2, '0');
+        if (countdownNodes.hours) countdownNodes.hours.textContent = String(hours).padStart(2, '0');
+        if (countdownNodes.minutes) countdownNodes.minutes.textContent = String(minutes).padStart(2, '0');
+        if (countdownNodes.seconds) countdownNodes.seconds.textContent = String(seconds).padStart(2, '0');
     };
 
     // Actualizar inmediatamente y luego cada segundo
