@@ -1,0 +1,54 @@
+/* Lightweight envelope animation for low-power devices */
+.lite-controls {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-top: 12px;
+  pointer-events: auto;
+}
+.lite-controls .lite-btn {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.08);
+  color: var(--text-light);
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+.lite-controls .lite-btn:active { transform: translateY(1px); }
+
+/* Allow a small, smooth 'open' animation even when lite-motion is enabled.
+   It is intentionally simple (translate + opacity) and uses transitions instead of heavy animations. */
+body.lite-motion.allow-lite-animation .envelope,
+body.allow-lite-animation .envelope {
+  will-change: transform, opacity;
+}
+
+/* Make sure letter and front use transitions (not complex keyframe animations) */
+.envelope .letter {
+  transition: transform 480ms cubic-bezier(0.22, 0.9, 0.34, 1), opacity 360ms ease;
+  transform: translateY(0);
+  opacity: 1;
+}
+
+/* When lite-open, lift the front and slide the letter up a bit */
+.envelope.lite-open .front {
+  transform: translateY(-44px) translateZ(0);
+  transition: transform 520ms cubic-bezier(0.22, 0.9, 0.34, 1);
+}
+.envelope.lite-open .flap {
+  transform: rotateX(20deg) translateY(-6px);
+  transition: transform 520ms cubic-bezier(0.22, 0.9, 0.34, 1);
+  transform-origin: top center;
+}
+.envelope.lite-open .letter {
+  transform: translateY(-28px);
+  opacity: 1;
+}
+
+/* Make controls responsive and non-intrusive on very small screens */
+@media (max-width: 420px) {
+  .lite-controls .lite-btn { padding: 6px 8px; font-size:0.85rem; }
+  .envelope.lite-open .front { transform: translateY(-34px); }
+  .envelope.lite-open .letter { transform: translateY(-20px); }
+}

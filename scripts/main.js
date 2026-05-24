@@ -3,7 +3,7 @@ import { createStars } from './stars.js';
 import { initParallax } from './parallax.js';
 import { initMoonScrollParallax } from './moon-scroll-parallax.js';
 import { initDynamicSparkles } from './dynamic-sparkles.js';
-import { openInvitation, openInvitationLite } from './envelope-handlers.js';
+import { openInvitation, openInvitationLite, openInvitationLiteAnimated } from './envelope-handlers.js';
 import { updateCountdown } from './countdown.js';
 import './scroll-observer.js';
 import { initCustomSelects } from './custom-select.js';
@@ -49,6 +49,42 @@ function initializeApp() {
         const tapInstruction = document.querySelector('.tap-instruction');
         if (tapInstruction) {
             tapInstruction.textContent = 'Toca para continuar';
+        }
+
+        // Añadir controles para dispositivos con modo lite: permitir ver una animación ligera o saltar
+        const envelopeWrapper = document.querySelector('.envelope-wrapper');
+        if (envelopeWrapper) {
+            const controls = document.createElement('div');
+            controls.className = 'lite-controls';
+            controls.innerHTML = `
+                <button class="lite-btn lite-btn-animate" type="button">Ver animación ligera</button>
+                <button class="lite-btn lite-btn-skip" type="button">Saltar</button>
+            `;
+            envelopeWrapper.appendChild(controls);
+
+            const animateBtn = controls.querySelector('.lite-btn-animate');
+            const skipBtn = controls.querySelector('.lite-btn-skip');
+
+            if (animateBtn) {
+                animateBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    // Habilitar la animación ligera (override) y ejecutar la animación simplificada
+                    document.body.classList.add('allow-lite-animation');
+                    try {
+                        openInvitationLiteAnimated();
+                    } catch (err) {
+                        // fallback: ejecutar la versión sin animación si falla
+                        openInvitationLite();
+                    }
+                });
+            }
+
+            if (skipBtn) {
+                skipBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    openInvitationLite();
+                });
+            }
         }
     }
 

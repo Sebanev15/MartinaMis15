@@ -49,6 +49,43 @@ export function openInvitationLite() {
     }, totalDuration);
 }
 
+export function openInvitationLiteAnimated() {
+    // Una animación ligera y segura para dispositivos con recursos limitados.
+    const overlay = document.getElementById('welcome-overlay');
+    const envelope = document.querySelector('.envelope');
+    const wrapper = document.querySelector('.envelope-wrapper');
+    const mainContent = document.getElementById('main-content');
+
+    if (!envelope || envelope.classList.contains('open')) {
+        // Si el sobre ya está abierto o no existe, caer a la versión lite normal
+        openInvitationLite();
+        return;
+    }
+
+    // Iniciar fade del overlay (misma intención que openInvitationLite)
+    if (overlay) overlay.classList.add('lite-exit');
+
+    // Aplicar clases que activan transiciones CSS sencillas (.lite-open)
+    envelope.classList.add('open', 'lite-open');
+    if (wrapper) wrapper.style.pointerEvents = 'none';
+    envelope.classList.add('is-opening');
+
+    // Duración estimada de la animación ligera (coincide con CSS)
+    const animationDuration = 640;
+
+    // Mostrar contenido principal al inicio de la transición para evitar saltos
+    setTimeout(() => {
+        if (mainContent) mainContent.classList.add('show');
+    }, 180);
+
+    // Marcar overlay como "opened" cuando termina la animación principal
+    setTimeout(() => {
+        if (overlay) overlay.classList.add('opened');
+        envelope.classList.remove('is-opening');
+        envelope.classList.remove('lite-open');
+    }, animationDuration);
+}
+
 /**
  * Transición completa de sobre a pantalla completa (desktop)
  */
