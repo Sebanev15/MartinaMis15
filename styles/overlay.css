@@ -357,3 +357,11 @@
     pointer-events: auto;
     transform: translateY(0);
 }
+
+/* Suppress accent lights during fullscreen handoff to avoid bright stripe */
+#welcome-overlay.suppress-accent::before,
+#welcome-overlay.suppress-accent::after {
+    opacity: 0 !important;
+    transition: opacity 0.18s ease !important;
+    pointer-events: none;
+}

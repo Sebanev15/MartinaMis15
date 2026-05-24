@@ -111,21 +111,20 @@ export function openInvitation() {
     const envelope = document.querySelector('.envelope');
     const overlay = document.getElementById('welcome-overlay');
     const wrapper = document.querySelector('.envelope-wrapper');
+    const fullscreenNode = document.querySelector('#welcome-overlay .fullscreen-letter');
+    const srcLetterNode = document.querySelector('#welcome-overlay .envelope .letter');
 
     const letterLiftMs = 1300;
     const hoverCycleMs = 2400;
     const overlayFadeDelayMs = 900;
     const mainRevealLeadMs = 520;
-    const fullscreenNode = document.querySelector('#welcome-overlay .fullscreen-letter');
-    const srcLetterNode = document.querySelector('#welcome-overlay .envelope .letter');
     let handoffStarted = false;
 
     if (!envelope || envelope.classList.contains('open')) return;
 
     envelope.classList.add('open');
     if (wrapper) wrapper.style.pointerEvents = 'none';
-    
-    // Estabilizar sobre
+
     envelope.style.animation = 'none';
     envelope.style.transform = 'translateY(0) rotate(0deg)';
 
@@ -137,45 +136,35 @@ export function openInvitation() {
         handoffStarted = true;
         envelope.classList.remove('is-hovering');
 
+        if (overlay) overlay.classList.add('suppress-accent');
+
         requestAnimationFrame(() => {
-            requestAnimationFrame(() => {
-                syncFullscreenLetter();
-                positionFullscreenLetterFromSource();
+            promoteSourceLetterToFullscreen();
 
-                if (fullscreenNode) {
-                    fullscreenNode.classList.add('is-visible');
-                    fullscreenNode.classList.remove('is-zooming');
-                }
-
+            if (fullscreenNode) {
+                fullscreenNode.classList.add('is-visible');
                 requestAnimationFrame(() => {
-                    if (fullscreenNode) fullscreenNode.classList.add('is-zooming');
+                    fullscreenNode.classList.add('is-zooming');
                 });
+            }
 
-                setTimeout(() => {
-                    envelope.classList.add('full-screen');
-                }, overlayFadeDelayMs + 900);
+            setTimeout(() => {
+                envelope.classList.add('full-screen');
+            }, overlayFadeDelayMs + 650);
 
-                setTimeout(() => {
-                    revealMainContent();
-                }, Math.max(overlayFadeDelayMs - mainRevealLeadMs, 0));
+            setTimeout(() => {
+                revealMainContent();
+            }, Math.max(overlayFadeDelayMs - mainRevealLeadMs, 0));
 
-                setTimeout(() => {
-                    if (overlay) {
-                        overlay.classList.add('opened');
-                    }
-                }, overlayFadeDelayMs);
+            setTimeout(() => {
+                if (overlay) overlay.classList.add('opened');
+            }, overlayFadeDelayMs);
 
-                setTimeout(() => {
-                    if (fullscreenNode) fullscreenNode.classList.remove('is-visible');
-                    envelope.classList.remove('is-opening');
-                    if (srcLetterNode) {
-                        srcLetterNode.style.opacity = '';
-                        srcLetterNode.style.transition = '';
-                        srcLetterNode.style.transform = '';
-                        srcLetterNode.style.animation = '';
-                    }
-                }, overlayFadeDelayMs + 1300);
-            });
+            setTimeout(() => {
+                if (fullscreenNode) fullscreenNode.classList.remove('is-visible');
+                envelope.classList.remove('is-opening');
+                if (overlay) overlay.classList.remove('suppress-accent');
+            }, overlayFadeDelayMs + 1300);
         });
     };
 
@@ -194,37 +183,58 @@ export function openInvitation() {
     }, letterLiftMs);
 }
 
-function syncFullscreenLetter() {
-    const fullscreen = document.querySelector('#welcome-overlay .fullscreen-letter');
-    const src = document.querySelector('#welcome-overlay .envelope .letter-content');
-    const dst = fullscreen?.querySelector('.letter-content');
-    if (!fullscreen || !src || !dst) return;
-
-    const clone = src.cloneNode(true);
-    dst.replaceWith(clone);
-}
-
-function positionFullscreenLetterFromSource() {
+function promoteSourceLetterToFullscreen() {
     const fullscreen = document.querySelector('#welcome-overlay .fullscreen-letter');
     const srcLetter = document.querySelector('#welcome-overlay .envelope .letter');
-    const dstLetter = fullscreen?.querySelector('.letter');
-    if (!fullscreen || !srcLetter || !dstLetter) return;
+    if (!fullscreen || !srcLetter) return;
 
     const srcRect = srcLetter.getBoundingClientRect();
-    const dstRect = dstLetter.getBoundingClientRect();
 
+    const placeholder = fullscreen.querySelector('.letter');
+    if (placeholder && placeholder !== srcLetter) {
+        fullscreen.replaceChild(srcLetter, placeholder);
+    } else if (srcLetter.parentElement !== fullscreen) {
+        fullscreen.appendChild(srcLetter);
+    }
+
+    const computed = window.getComputedStyle(srcLetter);
+    const radius = computed.borderRadius || '2px';
     const srcCx = srcRect.left + srcRect.width / 2;
     const srcCy = srcRect.top + srcRect.height / 2;
 
-    const dstCx = dstRect.left + dstRect.width / 2;
-    const dstCy = dstRect.top + dstRect.height / 2;
+    srcLetter.classList.remove('fs-morph-source');
+    srcLetter.style.setProperty('--morph-width', `${srcRect.width}px`);
+    srcLetter.style.setProperty('--morph-height', `${srcRect.height}px`);
+    srcLetter.style.setProperty('--morph-top', `${srcCy}px`);
+    srcLetter.style.setProperty('--morph-left', `${srcCx}px`);
+    srcLetter.style.setProperty('--morph-radius', radius);
+    const targetWidth = Math.round(Math.min(srcRect.width * 2.2, window.innerWidth * 0.95));
+    const targetHeight = Math.round(Math.min(srcRect.height * 2.2, window.innerHeight * 0.9));
+    srcLetter.style.setProperty('--morph-target-width', `${targetWidth}px`);
+    srcLetter.style.setProperty('--morph-target-height', `${targetHeight}px`);
+    srcLetter.style.setProperty('--content-scale', '0.5');
+    srcLetter.style.margin = '0';
+    srcLetter.style.borderRadius = radius;
+    srcLetter.style.boxShadow = '0 4px 20px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.08)';
+    srcLetter.style.padding = '20px';
+    srcLetter.style.transition = '';
+    srcLetter.style.position = 'fixed';
+    srcLetter.style.opacity = '0';
+    srcLetter.style.visibility = 'hidden';
+    srcLetter.style.top = '';
+    srcLetter.style.left = '';
+    srcLetter.style.width = '';
+    srcLetter.style.height = '';
+    srcLetter.style.transform = '';
 
-    const dx = srcCx - dstCx;
-    const dy = srcCy - dstCy;
-
-    const scale = srcRect.width / Math.max(dstRect.width, 1);
-
-    fullscreen.style.setProperty('--fs-start-x', `${dx}px`);
-    fullscreen.style.setProperty('--fs-start-y', `${dy}px`);
-    fullscreen.style.setProperty('--fs-start-scale', `${scale}`);
+    requestAnimationFrame(() => {
+        srcLetter.getBoundingClientRect();
+        srcLetter.style.visibility = 'visible';
+        srcLetter.style.opacity = '1';
+        srcLetter.style.setProperty('--morph-target-width', `${targetWidth}px`);
+        srcLetter.style.setProperty('--morph-target-height', `${targetHeight}px`);
+        srcLetter.style.setProperty('--content-scale', '1');
+        srcLetter.style.padding = 'clamp(24px, 4vw, 56px)';
+        srcLetter.style.boxShadow = '0 8px 30px rgba(0,0,0,0.45), 0 0 40px rgba(212, 175, 55, 0.10)';
+    });
 }
