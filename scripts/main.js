@@ -8,7 +8,7 @@ import { updateCountdown } from './countdown.js';
 import './scroll-observer.js';
 import { initCustomSelects } from './custom-select.js';
 import { handleFormSubmit } from './form-handler.js';
-import { isLowPowerDevice, isMobileDevice } from './utils.js';
+import { isLowPowerDevice, isVeryLowPowerDevice, prefersReducedMotion } from './utils.js';
 
 // Inicialización cuando el DOM está listo
 document.addEventListener('DOMContentLoaded', () => {
@@ -28,32 +28,41 @@ function initializeApp() {
     // Inicializar sparkles dinámicos (deshabilitado - no se renderizaba correctamente)
     // initDynamicSparkles();
 
-    // Detectar dispositivo de bajo poder
-    let useLiteMotion = isLowPowerDevice();
+    // Envelope behavior policy: default to full animation unless device is very low-power.
+    const veryLow = isVeryLowPowerDevice();
+    const low = isLowPowerDevice() && !veryLow;
+    const prefersReduced = prefersReducedMotion();
+    let envelopeMode = 'full'; // 'full' | 'lite-controls' | 'immediate'
 
-    // Permitir overrides por query string para pruebas: ?forceMotion=1 para forzar animaciones completas
+    // Query string overrides for testing:
     try {
         const params = new URLSearchParams(window.location.search);
-        if (params.get('forceMotion') === '1') {
-            useLiteMotion = false;
-        }
-        if (params.get('forceLite') === '1') {
-            useLiteMotion = true;
-        }
+        if (params.get('forceLite') === '1') envelopeMode = 'lite-controls';
+        if (params.get('forceImmediate') === '1') envelopeMode = 'immediate';
+        if (params.get('forceMotion') === '1') envelopeMode = 'full';
     } catch (e) {
-        // Ignore parsing errors
+        // ignore
     }
-    
-    if (useLiteMotion) {
+
+    // Honor accessibility and data-saver signals: force immediate (no animation)
+    const saveData = navigator.connection && navigator.connection.saveData;
+    if (prefersReduced || saveData || veryLow) {
+        envelopeMode = 'immediate';
+    } else if (low && envelopeMode === 'full') {
+        envelopeMode = 'lite-controls';
+    }
+
+    // Apply lite-motion class for styling when not using full animations
+    if (envelopeMode === 'lite-controls' || envelopeMode === 'immediate') {
         document.body.classList.add('lite-motion');
         const tapInstruction = document.querySelector('.tap-instruction');
-        if (tapInstruction) {
-            tapInstruction.textContent = 'Toca para continuar';
-        }
+        if (tapInstruction) tapInstruction.textContent = 'Toca para continuar';
+    }
 
-        // Añadir controles para dispositivos con modo lite: permitir ver una animación ligera o saltar
+    // If in lite-controls mode, add small UI to allow user to play a lightweight animation or skip
+    if (envelopeMode === 'lite-controls') {
         const envelopeWrapper = document.querySelector('.envelope-wrapper');
-        if (envelopeWrapper) {
+        if (envelopeWrapper && !envelopeWrapper.querySelector('.lite-controls')) {
             const controls = document.createElement('div');
             controls.className = 'lite-controls';
             controls.innerHTML = `
@@ -68,22 +77,12 @@ function initializeApp() {
             if (animateBtn) {
                 animateBtn.addEventListener('click', (e) => {
                     e.stopPropagation();
-                    // Habilitar la animación ligera (override) y ejecutar la animación simplificada
                     document.body.classList.add('allow-lite-animation');
-                    try {
-                        openInvitationLiteAnimated();
-                    } catch (err) {
-                        // fallback: ejecutar la versión sin animación si falla
-                        openInvitationLite();
-                    }
+                    try { openInvitationLiteAnimated(); } catch (err) { openInvitationLite(); }
                 });
             }
-
             if (skipBtn) {
-                skipBtn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    openInvitationLite();
-                });
+                skipBtn.addEventListener('click', (e) => { e.stopPropagation(); openInvitationLite(); });
             }
         }
     }
@@ -92,8 +91,20 @@ function initializeApp() {
     const envelopeNode = document.querySelector('.envelope');
     if (envelopeNode) {
         const openEnvelope = () => {
-            if (useLiteMotion) {
-                openInvitationLite();
+            if (envelopeMode === 'immediate') {
+                // actúa como botón simple: revelar sin animaciones
+                if (typeof openInvitationImmediate === 'function') {
+                    openInvitationImmediate();
+                } else {
+                    openInvitationLite();
+                }
+            } else if (envelopeMode === 'lite-controls') {
+                // Si el usuario habilitó la animación ligera, ejecutarla; si no, la versión lite por defecto
+                if (document.body.classList.contains('allow-lite-animation')) {
+                    openInvitationLiteAnimated();
+                } else {
+                    openInvitationLite();
+                }
             } else {
                 openInvitation();
             }
@@ -106,6 +117,9 @@ function initializeApp() {
                 openEnvelope();
             }
         });
+
+        // Improve touch responsiveness: quick visual feedback
+        envelopeNode.addEventListener('touchstart', () => envelopeNode.classList.add('touched'), { passive: true });
     }
 
     // Inicializar cuenta regresiva

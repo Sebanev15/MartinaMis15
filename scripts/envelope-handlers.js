@@ -62,6 +62,9 @@ export function openInvitationLiteAnimated() {
         return;
     }
 
+    // Activar clase que habilita transiciones ligeras (CSS)
+    document.body.classList.add('allow-lite-animation');
+
     // Iniciar fade del overlay (misma intención que openInvitationLite)
     if (overlay) overlay.classList.add('lite-exit');
 
@@ -71,19 +74,34 @@ export function openInvitationLiteAnimated() {
     envelope.classList.add('is-opening');
 
     // Duración estimada de la animación ligera (coincide con CSS)
-    const animationDuration = 640;
+    const animationDuration = 700;
 
     // Mostrar contenido principal al inicio de la transición para evitar saltos
     setTimeout(() => {
         if (mainContent) mainContent.classList.add('show');
-    }, 180);
+    }, 200);
 
     // Marcar overlay como "opened" cuando termina la animación principal
     setTimeout(() => {
         if (overlay) overlay.classList.add('opened');
         envelope.classList.remove('is-opening');
         envelope.classList.remove('lite-open');
+        // limpiar flag de animación ligera
+        document.body.classList.remove('allow-lite-animation');
     }, animationDuration);
+}
+
+export function openInvitationImmediate() {
+    // Revelado inmediato sin animaciones (modo "simple botón").
+    const overlay = document.getElementById('welcome-overlay');
+    const wrapper = document.querySelector('.envelope-wrapper');
+    if (overlay) {
+        overlay.classList.add('opened');
+        // ocultar rápidamente para evitar foco/elementos interactivos
+        overlay.style.display = 'none';
+    }
+    if (wrapper) wrapper.style.pointerEvents = '';
+    revealMainContent();
 }
 
 /**

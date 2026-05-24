@@ -1,4 +1,4 @@
-/* Lightweight envelope animation for low-power devices */
+/* Lightweight envelope animation for low-power devices - polished for mobile Safari */
 .lite-controls {
   display: flex;
   gap: 10px;
@@ -14,41 +14,65 @@
   border-radius: 8px;
   font-size: 0.95rem;
   cursor: pointer;
+  touch-action: manipulation;
 }
 .lite-controls .lite-btn:active { transform: translateY(1px); }
 
-/* Allow a small, smooth 'open' animation even when lite-motion is enabled.
-   It is intentionally simple (translate + opacity) and uses transitions instead of heavy animations. */
+/* Small, safe animations for low-power devices. Use transitions (not heavy keyframes). */
 body.lite-motion.allow-lite-animation .envelope,
 body.allow-lite-animation .envelope {
   will-change: transform, opacity;
+  -webkit-transform: translateZ(0);
 }
 
-/* Make sure letter and front use transitions (not complex keyframe animations) */
+.envelope {
+  transition: transform 360ms ease;
+  -webkit-transition: -webkit-transform 360ms ease;
+  transform-origin: center center;
+}
+
+/* Letter baseline */
 .envelope .letter {
-  transition: transform 480ms cubic-bezier(0.22, 0.9, 0.34, 1), opacity 360ms ease;
-  transform: translateY(0);
-  opacity: 1;
+  transition: transform 520ms cubic-bezier(0.22, 0.9, 0.34, 1), opacity 380ms ease;
+  -webkit-transition: -webkit-transform 520ms cubic-bezier(0.22, 0.9, 0.34, 1), opacity 380ms ease;
+  transform: translateY(6px);
+  opacity: 0.98;
+  will-change: transform, opacity;
 }
 
-/* When lite-open, lift the front and slide the letter up a bit */
+/* Front lift & flap rotation - subtle 3D effect */
 .envelope.lite-open .front {
-  transform: translateY(-44px) translateZ(0);
-  transition: transform 520ms cubic-bezier(0.22, 0.9, 0.34, 1);
+  transform: translateY(-56px) rotateX(6deg) translateZ(0);
+  -webkit-transform: translateY(-56px) rotateX(6deg) translateZ(0);
+  transition: transform 520ms cubic-bezier(0.22, 0.9, 0.34, 1), box-shadow 420ms ease;
+  -webkit-transition: -webkit-transform 520ms cubic-bezier(0.22, 0.9, 0.34, 1), box-shadow 420ms ease;
 }
 .envelope.lite-open .flap {
-  transform: rotateX(20deg) translateY(-6px);
+  transform: rotateX(28deg) translateY(-8px) translateZ(0);
+  -webkit-transform: rotateX(28deg) translateY(-8px) translateZ(0);
   transition: transform 520ms cubic-bezier(0.22, 0.9, 0.34, 1);
   transform-origin: top center;
+  -webkit-transform-origin: top center;
 }
 .envelope.lite-open .letter {
-  transform: translateY(-28px);
+  transform: translateY(-32px) scale(1.002);
   opacity: 1;
 }
 
-/* Make controls responsive and non-intrusive on very small screens */
+/* Light elevation for the lifted front */
+.envelope .front {
+  will-change: transform, box-shadow;
+  transition: box-shadow 420ms ease, transform 420ms ease;
+  -webkit-transition: box-shadow 420ms ease, -webkit-transform 420ms ease;
+}
+.envelope.lite-open .front {
+  box-shadow: 0 18px 32px rgba(10,10,20,0.28);
+}
+
+/* Tweak values on very small screens */
 @media (max-width: 420px) {
   .lite-controls .lite-btn { padding: 6px 8px; font-size:0.85rem; }
-  .envelope.lite-open .front { transform: translateY(-34px); }
-  .envelope.lite-open .letter { transform: translateY(-20px); }
+  .envelope.lite-open .front { transform: translateY(-44px) rotateX(5deg) translateZ(0); }
+  .envelope.lite-open .letter { transform: translateY(-22px); }
+  .envelope.lite-open .flap { transform: rotateX(22deg) translateY(-6px) translateZ(0); }
 }

@@ -6,20 +6,34 @@ export function clamp(value, min, max) {
 export function isLowPowerDevice() {
     const mem = navigator.deviceMemory || 0;
     const cores = navigator.hardwareConcurrency || 0;
+
+    // Conservative low-power detection (does NOT include user preferences here).
+    if (mem > 0 && cores > 0) {
+        return mem <= 2 && cores <= 2; // require both metrics to be relatively low
+    }
+
+    if (mem > 0) return mem <= 1; // ~1GB or less
+    if (cores > 0) return cores <= 1; // single-core (rare)
+
+    return false;
+}
+
+export function isVeryLowPowerDevice() {
+    const mem = navigator.deviceMemory || 0;
+    const cores = navigator.hardwareConcurrency || 0;
     const saveData = navigator.connection && navigator.connection.saveData;
     const reduceMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
 
-    // Honor explicit user preferences first
+    // Honor explicit user preferences and data-saver as immediate no-animation signals
     if (reduceMotionQuery.matches || Boolean(saveData)) return true;
 
-    // If both memory and cores are available, consider low-power only when BOTH are low
+    // Very low thresholds: both RAM and cores must be extremely limited
     if (mem > 0 && cores > 0) {
-        return mem <= 2 && cores <= 2; // conservative: require both metrics to be low
+        return mem <= 1 && cores <= 1; // 1GB or less AND 1 core
     }
 
-    // If only one metric is available, be conservative and only treat as low when it's very low
-    if (mem > 0) return mem <= 1; // ~1GB or less
-    if (cores > 0) return cores <= 1; // single-core (rare)
+    if (mem > 0) return mem <= 0.75; // fractional if available
+    if (cores > 0) return cores <= 1;
 
     return false;
 }
