@@ -26,6 +26,8 @@
     backdrop-filter: blur(8px);
     transition: color 0.35s ease, border-color 0.35s ease, box-shadow 0.35s ease, background 0.35s ease, transform 0.35s ease;
     overflow: hidden;
+    will-change: transform, box-shadow, background, color;
+    cursor: pointer;
 }
 
 .event-date::before {
@@ -38,6 +40,17 @@
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.35s ease;
+}
+
+.event-date::after {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: inherit;
+    background: radial-gradient(circle at 50% 50%, rgba(212, 175, 55, 0.22) 0%, rgba(212, 175, 55, 0.08) 35%, transparent 70%);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
 }
 
 .info-section.visible .event-date {
@@ -68,12 +81,12 @@
 }
 
 .event-date:hover {
-    transform: translateY(-1px) scale(1.02);
-    animation: eventDateHover 0.45s;
+    transform: translateY(-2px) scale(1.04);
+    animation: eventDateHover 0.9s ease-in-out infinite alternate;
     color: var(--gold-light);
     border-color: rgba(212, 175, 55, 0.38);
-    box-shadow: 0 14px 30px rgba(212, 175, 55, 0.18);
-    background: rgba(24, 17, 54, 0.82);
+    box-shadow: 0 18px 36px rgba(212, 175, 55, 0.24), 0 0 24px rgba(212, 175, 55, 0.12);
+    background: rgba(24, 17, 54, 0.88);
 }
 
 .event-date:hover::before {
@@ -81,9 +94,27 @@
     animation: eventDatePulse 0.9s ease-out;
 }
 
+.event-date:hover::after {
+    opacity: 1;
+    animation: eventDateGlow 1.2s ease-in-out infinite alternate;
+}
+
 @keyframes eventDatePulse {
     0% {
         box-shadow: 0 0 0 rgba(212, 175, 55, 0);
+    }
+
+    @keyframes eventDateGlow {
+        0% {
+            transform: scale(1);
+            opacity: 0.22;
+            filter: blur(0px);
+        }
+        100% {
+            transform: scale(1.06);
+            opacity: 0.48;
+            filter: blur(1px);
+        }
     }
     50% {
         box-shadow: 0 0 0 6px rgba(212, 175, 55, 0.08);
@@ -96,15 +127,18 @@
 @keyframes eventDateHover {
     0% {
         transform: translateY(0) scale(1);
-        box-shadow: 0 10px 24px rgba(0, 0, 0, 0.22);
+        box-shadow: 0 10px 24px rgba(0, 0, 0, 0.22), 0 0 0 rgba(212, 175, 55, 0);
+        filter: brightness(1);
     }
     50% {
-        transform: translateY(-0.6px) scale(1.015);
-        box-shadow: 0 12px 26px rgba(212, 175, 55, 0.2);
+        transform: translateY(-3px) scale(1.05);
+        box-shadow: 0 18px 40px rgba(212, 175, 55, 0.28), 0 0 18px rgba(212, 175, 55, 0.12);
+        filter: brightness(1.08);
     }
     100% {
-        transform: translateY(-1px) scale(1.02);
-        box-shadow: 0 14px 30px rgba(212, 175, 55, 0.18);
+        transform: translateY(-1px) scale(1.03);
+        box-shadow: 0 16px 36px rgba(212, 175, 55, 0.24), 0 0 20px rgba(212, 175, 55, 0.10);
+        filter: brightness(1.06);
     }
 }
 
@@ -145,17 +179,6 @@
     100% {
         transform: translateY(-2px) scale(1.015);
         box-shadow: 0 12px 28px rgba(212, 175, 55, 0.15);
-    }
-}
-
-@keyframes eventDateHover {
-    0% {
-        transform: translateY(0) scale(1);
-        box-shadow: 0 10px 24px rgba(0, 0, 0, 0.22);
-    }
-    100% {
-        transform: translateY(-1px) scale(1.02);
-        box-shadow: 0 14px 30px rgba(212, 175, 55, 0.18);
     }
 }
 
