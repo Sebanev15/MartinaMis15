@@ -9,10 +9,19 @@ export function isLowPowerDevice() {
     const saveData = navigator.connection && navigator.connection.saveData;
     const reduceMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
 
-    return reduceMotionQuery.matches
-        || Boolean(saveData)
-        || (mem > 0 && mem <= 3)
-        || (cores > 0 && cores <= 3);
+    // Honor explicit user preferences first
+    if (reduceMotionQuery.matches || Boolean(saveData)) return true;
+
+    // If both memory and cores are available, consider low-power only when BOTH are low
+    if (mem > 0 && cores > 0) {
+        return mem <= 2 && cores <= 2; // conservative: require both metrics to be low
+    }
+
+    // If only one metric is available, be conservative and only treat as low when it's very low
+    if (mem > 0) return mem <= 1; // ~1GB or less
+    if (cores > 0) return cores <= 1; // single-core (rare)
+
+    return false;
 }
 
 export function isMobileDevice() {

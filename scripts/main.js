@@ -29,7 +29,20 @@ function initializeApp() {
     // initDynamicSparkles();
 
     // Detectar dispositivo de bajo poder
-    const useLiteMotion = isLowPowerDevice();
+    let useLiteMotion = isLowPowerDevice();
+
+    // Permitir overrides por query string para pruebas: ?forceMotion=1 para forzar animaciones completas
+    try {
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('forceMotion') === '1') {
+            useLiteMotion = false;
+        }
+        if (params.get('forceLite') === '1') {
+            useLiteMotion = true;
+        }
+    } catch (e) {
+        // Ignore parsing errors
+    }
     
     if (useLiteMotion) {
         document.body.classList.add('lite-motion');
