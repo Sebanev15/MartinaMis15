@@ -29,7 +29,7 @@ function initializeApp() {
     // initDynamicSparkles();
 
     // Detectar dispositivo de bajo poder
-    const useLiteMotion = isLowPowerDevice() || isMobileDevice();
+    const useLiteMotion = isLowPowerDevice();
     
     if (useLiteMotion) {
         document.body.classList.add('lite-motion');
