@@ -22,7 +22,7 @@ Invitacion web interactiva para un cumple de 15 años (Martina) con animacion de
 - **Fondo dinámico:** Nebulosa con estrellas parpadeantes, lunas con cráteres y parallax automático (solo desktop).
 - **Cuenta regresiva:** Actualización en tiempo real (días, horas, minutos, segundos).
 - **Secciones info:** Ubicación, dress code, regalos, confirmación, mapa embebido.
-- **Formulario RSVP:** Conectado a Google Apps Script; valida nombre y asistentes, y almacena nombre, acompañantes y consideraciones.
+- **Formulario RSVP:** Conectado a Google Apps Script; valida nombre y asistentes, y almacena nombre, cédula, acompañantes y consideraciones.
 - **"Cómo llegar":** Botón que abre Google Maps con dirección predefinida.
 - **Fade-in scroll:** Secciones se revelan mientras scrolleas.
 - **Responsive:** Optimizado para mobile (modo liviano) y desktop (animación completa).
@@ -34,6 +34,8 @@ Invitacion web interactiva para un cumple de 15 años (Martina) con animacion de
 - **Guardas defensivas:** los handlers principales no fallan si falta algún nodo del DOM.
 - **Animación del sobre refinada:** el mismo `.letter` sale del sobre y se expande de forma más natural, con el contenido creciendo junto con la carta.
 - **`event-date` interactivo:** hover visible con pulso, glow y leve elevación.
+- **RSVP con acompañantes en filas nuevas:** el backend guarda una fila por invitado principal y una fila adicional por cada acompañante.
+- **Envío de acompañantes serializado:** el frontend envía `acompanantesJSON` para simplificar el procesamiento en Google Apps Script.
 
 ---
 
@@ -82,10 +84,12 @@ Invitacion web interactiva para un cumple de 15 años (Martina) con animacion de
 ### 6. **Sección Confirmación (Formulario RSVP)**
 - **Descripción:** Formulario para que los invitados confirmen su asistencia.
 - **Campos:**
+  - **Cédula:** Campo de texto obligatorio
   - **Nombre y Apellido:** Campo de texto obligatorio
   - **¿Cuántos asisten?:** Select personalizado con opciones (Solo yo, Yo + 1, Yo + 2, Yo + 3 acompañantes)
+  - **Acompañantes:** se generan dinámicamente con cédula, nombre y condición / alergias para cada uno
   - **Consideraciones/Alergias:** Textarea para especificar restricciones dietéticas o preferencias
-- **Envío:** Conectado a Google Apps Script para almacenamiento automático
+- **Envío:** Conectado a Google Apps Script para almacenamiento automático; el formulario envía los acompañantes en JSON y el backend los guarda en nuevas filas
 - **Validación:** Todos los campos son obligatorios
 
 ---
@@ -336,8 +340,9 @@ Invitacion web interactiva para un cumple de 15 años (Martina) con animacion de
 
 ### Google Apps Script
 - **scriptURL:** `https://script.google.com/macros/s/AKfycbxlJC-JY7BLCCu1Y0n35xeV4cmYSNC-nse8TsWdpfFQjKyCVOQC5OW_peLWWvDYiWyjqQ/exec`
-- **Campos POST:** Nombre, Acompañantes, Consideraciones.
-- **Respuesta esperada:** Status 200 (cualquier respuesta válida).
+- **Campos POST:** Cedula, Nombre, Acompañantes, Consideraciones, `acompanantesJSON`.
+- **Respuesta esperada:** JSON con `status: ok` y cantidad de acompañantes procesados.
+- **Importante:** el deployment del Apps Script debe actualizarse al hacer cambios (redeploy). Si ves una respuesta vieja, probablemente estás usando una versión anterior del web app.
 
 ### Google Maps
 - **Embed iframe:** Salón El Portal, Uruguay (coordenadas: -34.87526, -56.18994).
@@ -832,3 +837,5 @@ Algunos datos se actualizan automáticamente mediante JavaScript. Para cambiarlo
 ### Google Apps Script (Formulario)
 - **Ubicación:** Variable `scriptURL` en `scripts/form-handler.js`
 - **Cómo obtener:** Crea un nuevo Google Apps Script conectado a un formulario de Google Sheets
+- **Referencia incluida:** `apps-script/Code.gs` con ejemplo de `doPost(e)` que guarda el invitado principal y cada acompañante en filas nuevas.
+- **Setup requerido:** ejecutar `initialSetup()` una vez para guardar el ID de la hoja activa en `PropertiesService`.

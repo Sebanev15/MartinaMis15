@@ -178,10 +178,18 @@
         <section class="info-section fade-in-on-scroll">
             <h2>Confirmación</h2>
             <form>
+                    <p id="confirm-deadline-message" style="color: var(--gold-light); font-weight:700; margin-bottom:12px;">Importante: tienes tiempo para confirmar hasta el 25 de septiembre de 2026.</p>
+
+                <div class="form-group">
+                    <label for="cedula">Cédula</label>
+                    <input id="cedula" name="cedula" type="text" required placeholder="Tu cédula (sin puntos)">
+                </div>
+
                 <div class="form-group">
                     <label for="nombre">Nombre y Apellido</label>
-                    <input id="nombre" type="text" required placeholder="Tu nombre completo">
+                    <input id="nombre" name="nombre" type="text" required placeholder="Tu nombre completo">
                 </div>
+
                 <div class="form-group">
                     <label for="asistentes">¿Cuántos asisten?</label>
                     <div class="custom-select-wrapper">
@@ -206,10 +214,15 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- Contenedor donde se generarán los campos para cada acompañante -->
+                <div id="accompanantes-container"></div>
+
                 <div class="form-group">
                     <label for="menu">Consideraciones / Alergias</label>
-                    <textarea id="menu" rows="3" placeholder="Celíaco, vegetariano, vegano, alergias..."></textarea>
+                    <textarea id="menu" name="consideraciones" rows="3" placeholder="Celíaco, vegetariano, vegano, alergias..."></textarea>
                 </div>
+
                 <button type="submit" class="btn-submit">Confirmar Asistencia</button>
             </form>
         </section>

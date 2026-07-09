@@ -14,6 +14,27 @@ form {
     margin-bottom: 25px;
 }
 
+/* Estilo para bloques de acompañantes: fondo más oscuro, padding y separación clara */
+.accompanante-block {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    padding: 14px;
+    margin-bottom: 18px;
+    border-radius: 10px;
+}
+
+.accompanante-block label {
+    font-size: 0.75rem;
+    color: var(--gold);
+    margin-top: 8px;
+}
+
+.accompanante-block input {
+    background: rgba(0,0,0,0.25);
+    border: 1px solid rgba(212,175,55,0.08);
+    padding: 10px 12px;
+}
+
 .form-group.select-open {
     position: relative;
     z-index: 50;

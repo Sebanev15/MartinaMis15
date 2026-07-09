@@ -1,21 +1,41 @@
 // ===== MANEJADOR DEL FORMULARIO RSVP =====
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxlJC-JY7BLCCu1Y0n35xeV4cmYSNC-nse8TsWdpfFQjKyCVOQC5OW_peLWWvDYiWyjqQ/exec";
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzQ1flKbycFhwMX2AOpU1fSsHIuSBKe2leyIxRS3MI5p4FT-oseXmJXPbz5t1rJ6JHRMQ/exec";
 
 const DEFAULT_TRIGGER_LABEL = 'Selecciona...';
 const DEFAULT_SUBMIT_LABEL = 'Confirmar Asistencia';
+const SUBMITTING_LABEL = 'Enviando...';
+
+// Fecha límite: hasta el 25 de septiembre de 2026 inclusive.
+// Se desactiva a partir del 26 de septiembre 00:00 (hora local).
+const CONFIRM_DEADLINE = new Date(2026, 8, 26, 0, 0, 0);
 
 export async function handleFormSubmit(e) {
     e.preventDefault();
 
     const form = e.currentTarget;
     const submitButton = form.querySelector('button[type="submit"]');
-    const nameInput = form.querySelector('input[type="text"]');
+    const cedulaInput = form.querySelector('#cedula');
+    const nameInput = form.querySelector('#nombre');
     const asistentesSelect = form.querySelector('#asistentes');
-    const consideracionesTextarea = form.querySelector('textarea[id="menu"]');
+    const consideracionesTextarea = form.querySelector('#menu');
 
-    const name = nameInput.value.trim();
-    const acompanantes = asistentesSelect.value;
-    const consideraciones = consideracionesTextarea.value.trim();
+    // Verificar fecha límite por seguridad
+    if (isPastDeadline()) {
+        alert('Las confirmaciones ya cerraron.');
+        disableForm(form, true);
+        return;
+    }
+
+    const cedula = cedulaInput ? cedulaInput.value.trim() : '';
+    const name = nameInput ? nameInput.value.trim() : '';
+    const acompanantes = asistentesSelect ? parseInt(asistentesSelect.value, 10) : 0;
+    const consideraciones = consideracionesTextarea ? consideracionesTextarea.value.trim() : '';
+
+    if (!cedula) {
+        cedulaInput.focus();
+        cedulaInput.reportValidity();
+        return;
+    }
 
     if (!name) {
         nameInput.focus();
@@ -23,33 +43,71 @@ export async function handleFormSubmit(e) {
         return;
     }
 
-    if (!asistentesSelect.value) {
+    if (isNaN(acompanantes)) {
         const customSelect = form.querySelector('.custom-select');
-        if (customSelect) {
-            customSelect.classList.add('error');
-        }
+        if (customSelect) customSelect.classList.add('error');
         alert('Por favor selecciona cuántos asisten.');
         return;
     }
 
+    // Validar acompañantes: si hay acompañantes, cada bloque debe tener cédula y nombre
+    const accompagnantesData = [];
+    for (let i = 1; i <= acompanantes; i++) {
+        const cedId = `acomp_cedula_${i}`;
+        const nomId = `acomp_nombre_${i}`;
+        const condId = `acomp_condicion_${i}`;
+        const cedEl = form.querySelector(`#${cedId}`);
+        const nomEl = form.querySelector(`#${nomId}`);
+        const condEl = form.querySelector(`#${condId}`);
+
+        const aCed = cedEl ? cedEl.value.trim() : '';
+        const aNom = nomEl ? nomEl.value.trim() : '';
+        const aCond = condEl ? condEl.value.trim() : '';
+
+        if (!aCed || !aNom) {
+            alert(`Por favor completa cédula y nombre del acompañante #${i}.`);
+            if (!aCed && cedEl) { cedEl.focus(); cedEl.reportValidity(); }
+            else if (!aNom && nomEl) { nomEl.focus(); nomEl.reportValidity(); }
+            return;
+        }
+
+        accompagnantesData.push({ cedula: aCed, nombre: aNom, condicion: aCond, invitadoPor: name });
+    }
+
     submitButton.disabled = true;
-    submitButton.innerText = 'Enviando...';
+    submitButton.innerText = SUBMITTING_LABEL;
 
     const formData = new FormData();
+    formData.append('Cedula', cedula);
     formData.append('Nombre', name);
-    formData.append('Acompañantes', acompanantes);
+    formData.append('Acompañantes', String(acompanantes));
     formData.append('Consideraciones', consideraciones);
+
+    // Enviar datos de acompañantes como JSON serializado
+    if (accompagnantesData.length > 0) {
+        formData.append('acompanantesJSON', JSON.stringify(accompagnantesData));
+    }
+
 
     try {
         const response = await fetch(SCRIPT_URL, { method: 'POST', body: formData });
 
         if (!response.ok) {
-            throw new Error(`HTTP ${response.status}`);
+            console.error(`HTTP ${response.status}`);
+            alert('La confirmación no pudo enviarse. Inténtalo de nuevo.');
+            return;
         }
+
+        const responseData = await response.json();
+        console.log('=== RESPUESTA DEL BACKEND ===');
+        console.log(responseData);
 
         alert(`${name}, ¡gracias por confirmar!\n\nTe espero el 10 de octubre`);
         form.reset();
         resetCustomSelect(form);
+        // limpiar contenedor de acompañantes
+        const accContainer = document.querySelector('#accompanantes-container');
+        if (accContainer) accContainer.innerHTML = '';
     } catch (error) {
         console.error('Error al enviar formulario:', error);
         alert('Uy, hubo un problema. Inténtalo de nuevo.');
@@ -72,4 +130,113 @@ function resetCustomSelect(form) {
     }
 
     form.querySelectorAll('.custom-option').forEach(opt => opt.classList.remove('selected'));
+
+    // Limpiar campos dinámicos de acompañantes
+    const accContainer = form.querySelector('#accompanantes-container');
+    if (accContainer) accContainer.innerHTML = '';
+}
+
+function isPastDeadline() {
+    return new Date() >= CONFIRM_DEADLINE;
+}
+
+function disableForm(form, disabled = true) {
+    form.querySelectorAll('input, select, textarea, button').forEach(el => el.disabled = disabled);
+    const submit = form.querySelector('button[type="submit"]');
+    if (submit) submit.textContent = disabled ? 'Confirmaciones cerradas' : DEFAULT_SUBMIT_LABEL;
+}
+
+// Inicializar comportamiento extra del formulario: mensaje de fecha límite y generación de campos de acompañantes
+export function initFormEnhancements() {
+    const form = document.querySelector('form');
+    if (!form) return;
+
+    const deadlineMsg = document.getElementById('confirm-deadline-message');
+    const asistentesSelect = form.querySelector('#asistentes');
+    const accContainer = document.getElementById('accompanantes-container');
+    const nameInput = form.querySelector('#nombre');
+
+    if (deadlineMsg) {
+        if (isPastDeadline()) {
+            deadlineMsg.textContent = 'Las confirmaciones han finalizado.';
+            deadlineMsg.style.color = 'rgba(255,122,122,0.95)';
+            disableForm(form, true);
+        } else {
+            // Mostrar fecha formateada (día 25)
+            deadlineMsg.textContent = 'Importante: tienes tiempo para confirmar hasta el 25 de septiembre de 2026 (incl.).';
+        }
+    }
+
+    if (!asistentesSelect || !accContainer) return;
+
+    asistentesSelect.addEventListener('change', function () {
+        // limpiar
+        accContainer.innerHTML = '';
+
+        const count = parseInt(asistentesSelect.value, 10);
+        if (isNaN(count) || count <= 0) return;
+
+        for (let i = 1; i <= count; i++) {
+            const block = document.createElement('div');
+            block.className = 'form-group accompanante-block';
+
+            // Cédula
+            const cedLabel = document.createElement('label');
+            cedLabel.setAttribute('for', `acomp_cedula_${i}`);
+            cedLabel.textContent = `Acompañante ${i} - Cédula`;
+            const cedInput = document.createElement('input');
+            cedInput.type = 'text';
+            cedInput.id = `acomp_cedula_${i}`;
+            cedInput.name = `acomp_cedula_${i}`;
+            cedInput.placeholder = 'Cédula';
+            cedInput.required = true;
+
+            // Nombre
+            const nomLabel = document.createElement('label');
+            nomLabel.setAttribute('for', `acomp_nombre_${i}`);
+            nomLabel.textContent = `Acompañante ${i} - Nombre`;
+            const nomInput = document.createElement('input');
+            nomInput.type = 'text';
+            nomInput.id = `acomp_nombre_${i}`;
+            nomInput.name = `acomp_nombre_${i}`;
+            nomInput.placeholder = 'Nombre completo';
+            nomInput.required = true;
+
+            // Condición
+            const condLabel = document.createElement('label');
+            condLabel.setAttribute('for', `acomp_condicion_${i}`);
+            condLabel.textContent = `Acompañante ${i} - Condición / Alergias`;
+            const condInput = document.createElement('input');
+            condInput.type = 'text';
+            condInput.id = `acomp_condicion_${i}`;
+            condInput.name = `acomp_condicion_${i}`;
+            condInput.placeholder = 'Condición / restricciones (opcional)';
+
+            // Hidden invitado por
+            const invitedBy = document.createElement('input');
+            invitedBy.type = 'hidden';
+            invitedBy.id = `acomp_invitado_por_${i}`;
+            invitedBy.name = `acomp_invitado_por_${i}`;
+            invitedBy.value = nameInput ? nameInput.value.trim() : '';
+
+            // Acomodar orden: cedula, nombre, condición
+            block.appendChild(cedLabel);
+            block.appendChild(cedInput);
+            block.appendChild(nomLabel);
+            block.appendChild(nomInput);
+            block.appendChild(condLabel);
+            block.appendChild(condInput);
+            block.appendChild(invitedBy);
+
+            accContainer.appendChild(block);
+        }
+    });
+
+    // Mantener invitadoPor actualizado si cambia el nombre principal
+    if (nameInput) {
+        nameInput.addEventListener('input', () => {
+            const val = nameInput.value.trim();
+            accContainer.querySelectorAll('input[id^="acomp_invitado_por_"]').forEach(h => h.value = val);
+        });
+    }
 }

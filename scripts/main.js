@@ -7,7 +7,7 @@ import { openInvitation, openInvitationLite, openInvitationLiteAnimated, openInv
 import { updateCountdown } from './countdown.js';
 import './scroll-observer.js';
 import { initCustomSelects } from './custom-select.js';
-import { handleFormSubmit } from './form-handler.js';
+import { handleFormSubmit, initFormEnhancements } from './form-handler.js';
 import { isLowPowerDevice, isVeryLowPowerDevice, prefersReducedMotion } from './utils.js';
 
 // Inicialización cuando el DOM está listo
@@ -99,6 +99,9 @@ function initializeApp() {
 
     // Inicializar custom selects
     initCustomSelects();
+
+    // Inicializar mejoras del formulario (deadline y campos de acompañantes)
+    initFormEnhancements();
 
 
     // Configurar manejador del formulario
