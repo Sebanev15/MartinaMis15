@@ -1,5 +1,5 @@
 // ===== MANEJADOR DEL FORMULARIO RSVP =====
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzQ1flKbycFhwMX2AOpU1fSsHIuSBKe2leyIxRS3MI5p4FT-oseXmJXPbz5t1rJ6JHRMQ/exec";
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbygZjeeGDwEJ_ppXSv1N0LMNM4n1EDMF9m_EK9JJXEBad7BHtLeBpbyHgr4ZOEu2C0FZg/exec";
 
 const DEFAULT_TRIGGER_LABEL = 'Selecciona...';
 const DEFAULT_SUBMIT_LABEL = 'Confirmar Asistencia';
@@ -8,7 +8,7 @@ const SUBMITTING_LABEL = 'Enviando...';
 // Fecha límite: hasta el 25 de septiembre de 2026 inclusive.
 // Se desactiva a partir del 26 de septiembre 00:00 (hora local).
 const CONFIRM_DEADLINE = new Date(2026, 8, 26, 0, 0, 0);
-
+const dateToday = new Date();
 export async function handleFormSubmit(e) {
     e.preventDefault();
 
@@ -137,13 +137,30 @@ function resetCustomSelect(form) {
 }
 
 function isPastDeadline() {
-    return new Date() >= CONFIRM_DEADLINE;
-}
+    const today = new Date();
 
+    console.log('Fecha límite:', CONFIRM_DEADLINE);
+    console.log('Fecha actual:', today);
+
+    return today >= CONFIRM_DEADLINE;
+}
 function disableForm(form, disabled = true) {
-    form.querySelectorAll('input, select, textarea, button').forEach(el => el.disabled = disabled);
+    form.querySelectorAll('input, select, textarea, button').forEach(el => {
+        el.disabled = disabled;
+    });
+    const customSelect = form.querySelector('.custom-select');
+
+    if (customSelect) {
+        customSelect.classList.add('disabled');
+    }
+
+
     const submit = form.querySelector('button[type="submit"]');
-    if (submit) submit.textContent = disabled ? 'Confirmaciones cerradas' : DEFAULT_SUBMIT_LABEL;
+    if (submit) {
+        submit.textContent = disabled
+            ? 'Confirmaciones cerradas'
+            : DEFAULT_SUBMIT_LABEL;
+    }
 }
 
 // Inicializar comportamiento extra del formulario: mensaje de fecha límite y generación de campos de acompañantes
@@ -163,7 +180,7 @@ export function initFormEnhancements() {
             disableForm(form, true);
         } else {
             // Mostrar fecha formateada (día 25)
-            deadlineMsg.textContent = 'Importante: tienes tiempo para confirmar hasta el 25 de septiembre de 2026 (incl.).';
+            deadlineMsg.textContent = 'ATENCIÓN: tienes tiempo para confirmar hasta el 25 de septiembre de 2026';
         }
     }
 
