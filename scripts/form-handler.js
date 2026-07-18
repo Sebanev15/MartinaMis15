@@ -8,6 +8,7 @@ const SUBMITTING_LABEL = 'Enviando...';
 // Fecha límite: hasta el 25 de septiembre de 2026 inclusive.
 // Se desactiva a partir del 26 de septiembre 00:00 (hora local).
 const CONFIRM_DEADLINE = new Date(2026, 8, 26, 0, 0, 0);
+// const CONFIRM_DEADLINE = new Date(2026, 8, 26, 0, 0, 0);
 const dateToday = new Date();
 export async function handleFormSubmit(e) {
     e.preventDefault();
@@ -176,11 +177,11 @@ export function initFormEnhancements() {
     if (deadlineMsg) {
         if (isPastDeadline()) {
             deadlineMsg.textContent = 'Las confirmaciones han finalizado.';
-            deadlineMsg.style.color = 'rgba(255,122,122,0.95)';
+            deadlineMsg.style.color = 'rgba(253,82,82,0.94)';
             disableForm(form, true);
         } else {
             // Mostrar fecha formateada (día 25)
-            deadlineMsg.textContent = 'ATENCIÓN: tienes tiempo para confirmar hasta el 25 de septiembre de 2026';
+            deadlineMsg.textContent = 'tienes tiempo para confirmar hasta el 25 de septiembre de 2026';
         }
     }
 
@@ -197,10 +198,18 @@ export function initFormEnhancements() {
             const block = document.createElement('div');
             block.className = 'form-group accompanante-block';
 
+            const heading = document.createElement('div');
+            heading.className = 'accompanante-heading';
+            const headingTitle = document.createElement('span');
+            headingTitle.textContent = `Acompañante ${i}`;
+            const headingHint = document.createElement('span');
+            headingHint.textContent = 'Datos de asistencia';
+            heading.append(headingTitle, headingHint);
+
             // Cédula
             const cedLabel = document.createElement('label');
             cedLabel.setAttribute('for', `acomp_cedula_${i}`);
-            cedLabel.textContent = `Acompañante ${i} - Cédula`;
+            cedLabel.textContent = 'Cédula';
             const cedInput = document.createElement('input');
             cedInput.type = 'text';
             cedInput.id = `acomp_cedula_${i}`;
@@ -211,7 +220,7 @@ export function initFormEnhancements() {
             // Nombre
             const nomLabel = document.createElement('label');
             nomLabel.setAttribute('for', `acomp_nombre_${i}`);
-            nomLabel.textContent = `Acompañante ${i} - Nombre`;
+            nomLabel.textContent = 'Nombre y apellido';
             const nomInput = document.createElement('input');
             nomInput.type = 'text';
             nomInput.id = `acomp_nombre_${i}`;
@@ -222,12 +231,12 @@ export function initFormEnhancements() {
             // Condición
             const condLabel = document.createElement('label');
             condLabel.setAttribute('for', `acomp_condicion_${i}`);
-            condLabel.textContent = `Acompañante ${i} - Condición / Alergias`;
+            condLabel.textContent = 'Alergias o consideraciones';
             const condInput = document.createElement('input');
             condInput.type = 'text';
             condInput.id = `acomp_condicion_${i}`;
             condInput.name = `acomp_condicion_${i}`;
-            condInput.placeholder = 'Condición / restricciones (opcional)';
+            condInput.placeholder = 'Ej.: celíaco/a, vegetariano/a o alergias (opcional)';
 
             // Hidden invitado por
             const invitedBy = document.createElement('input');
@@ -237,6 +246,7 @@ export function initFormEnhancements() {
             invitedBy.value = nameInput ? nameInput.value.trim() : '';
 
             // Acomodar orden: cedula, nombre, condición
+            block.appendChild(heading);
             block.appendChild(cedLabel);
             block.appendChild(cedInput);
             block.appendChild(nomLabel);

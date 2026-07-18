@@ -10,6 +10,9 @@
     --text-light: #f5f5f5;
     --rose: #d946a6;
     --rose-light: #f08bc7;
+    --violet-light: #a78bfa;
+    --glass-surface: rgba(20, 18, 54, 0.72);
+    --gold-glow: rgba(232, 197, 71, 0.32);
     --particle-blur: 0.6px;
     --letter-lift: -220px;
     --tilt-envelope-rotateX: 0deg;

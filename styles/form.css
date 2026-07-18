@@ -14,25 +14,147 @@ form {
     margin-bottom: 25px;
 }
 
-/* Estilo para bloques de acompañantes: fondo más oscuro, padding y separación clara */
+#accompanantes-container {
+    display: grid;
+    gap: 18px;
+    margin: 4px 0 28px;
+    counter-reset: companion;
+}
+
+/* Cada acompañante se presenta como una tarjeta independiente y fácil de recorrer. */
 .accompanante-block {
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.04);
-    padding: 14px;
-    margin-bottom: 18px;
-    border-radius: 10px;
+    counter-increment: companion;
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+    background:
+        linear-gradient(135deg, rgba(212, 175, 55, 0.075), transparent 38%),
+        rgba(14, 10, 39, 0.48);
+    border: 1px solid rgba(232, 197, 71, 0.18);
+    border-left: 3px solid rgba(232, 197, 71, 0.68);
+    padding: 17px 20px 17px;
+    margin: 0;
+    border-radius: 14px;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.045), 0 12px 28px rgba(5, 4, 20, 0.16);
+    transition: border-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s var(--ease-out), background 0.3s ease;
+}
+
+.accompanante-block::before {
+    content: counter(companion, decimal-leading-zero);
+    position: absolute;
+    top: 16px;
+    right: 18px;
+    color: rgba(232, 197, 71, 0.5);
+    font-family: 'Playfair Display', serif;
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    pointer-events: none;
+}
+
+.accompanante-heading {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    min-height: 27px;
+    margin: 0 45px 14px 0;
+    position: relative;
+    z-index: 1;
+}
+
+.accompanante-heading span:first-child {
+    color: var(--gold-light);
+    font-family: 'Playfair Display', serif;
+    font-size: 1.1rem;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+}
+
+.accompanante-heading span:last-child {
+    color: rgba(232, 232, 232, 0.5);
+    font-size: 0.65rem;
+    font-weight: 600;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+}
+
+.accompanante-block::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 1px;
+    background: linear-gradient(90deg, rgba(232, 197, 71, 0.65), transparent 46%);
+    pointer-events: none;
+}
+
+.accompanante-block:hover,
+.accompanante-block:focus-within {
+    border-color: rgba(232, 197, 71, 0.42);
+    border-left-color: var(--gold-light);
+    background:
+        linear-gradient(135deg, rgba(212, 175, 55, 0.12), transparent 40%),
+        rgba(18, 13, 48, 0.68);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.07), 0 16px 34px rgba(5, 4, 20, 0.28), 0 0 24px rgba(212, 175, 55, 0.08);
+    transform: translateY(-2px);
 }
 
 .accompanante-block label {
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     color: var(--gold);
-    margin-top: 8px;
+    margin: 0 0 7px;
+    letter-spacing: 1.35px;
 }
 
 .accompanante-block input {
-    background: rgba(0,0,0,0.25);
-    border: 1px solid rgba(212,175,55,0.08);
-    padding: 10px 12px;
+    background: rgba(7, 5, 24, 0.52);
+    border: 1px solid rgba(232, 197, 71, 0.1);
+    padding: 12px 13px;
+    margin-bottom: 15px;
+    border-radius: 9px;
+}
+
+.accompanante-block input[id^="acomp_condicion_"] {
+    margin-bottom: 0;
+}
+
+.accompanante-block input:focus {
+    border-color: rgba(232, 197, 71, 0.72);
+    background: rgba(11, 8, 33, 0.8);
+    box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.09), 0 0 20px rgba(212, 175, 55, 0.09);
+}
+
+@media (max-width: 768px) {
+    #accompanantes-container {
+        gap: 14px;
+        margin-bottom: 22px;
+    }
+
+    .accompanante-block {
+        padding: 16px 15px 14px;
+        border-radius: 12px;
+    }
+
+    .accompanante-block::before {
+        top: 15px;
+        right: 14px;
+        font-size: 0.9rem;
+    }
+
+    .accompanante-heading {
+        gap: 7px;
+        margin-bottom: 12px;
+    }
+
+    .accompanante-heading span:first-child {
+        font-size: 1rem;
+    }
+
+    .accompanante-heading span:last-child {
+        font-size: 0.58rem;
+        letter-spacing: 0.9px;
+    }
 }
 
 .form-group.select-open {
@@ -190,6 +312,20 @@ input::placeholder {
     text-decoration: none;
     font-size: 0.9rem;
     box-shadow: 0 8px 20px rgba(107, 45, 122, 0.4);
+    overflow: hidden;
+    position: relative;
+    isolation: isolate;
+}
+
+.btn-submit::before,
+.btn-map::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(110deg, transparent 25%, rgba(255, 255, 255, 0.22) 48%, transparent 70%);
+    transform: translateX(-130%);
+    transition: transform 0.6s var(--ease-out);
+    pointer-events: none;
 }
 
 .btn-submit:hover {
@@ -198,6 +334,8 @@ input::placeholder {
     background: linear-gradient(135deg, #9d4edd 0%, #6b2d7a 100%);
     border-color: rgba(212, 175, 55, 0.7);
 }
+.btn-submit:hover::before,
+.btn-map:hover::before { transform: translateX(130%); }
 .btn-submit:disabled {
     background: #666;
     border-color: #666;
@@ -244,6 +382,8 @@ input::placeholder {
     box-shadow: 0 8px 20px rgba(107, 45, 122, 0.4);
     transition: box-shadow 0.35s ease, background 0.35s ease, border-color 0.35s ease, color 0.35s ease, transform 0.35s ease, text-shadow 0.35s ease;
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+    overflow: hidden;
+    isolation: isolate;
 }
 
 .btn-map:hover {
