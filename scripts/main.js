@@ -8,7 +8,7 @@ import { updateCountdown } from './countdown.js';
 import './scroll-observer.js';
 import { initCustomSelects } from './custom-select.js';
 import { handleFormSubmit, initFormEnhancements } from './form-handler.js';
-import { isLowPowerDevice, isVeryLowPowerDevice, prefersReducedMotion } from './utils.js';
+import { isLowPowerDevice, isVeryLowPowerDevice, isMobileDevice, prefersReducedMotion } from './utils.js';
 
 // Inicialización cuando el DOM está listo
 document.addEventListener('DOMContentLoaded', () => {
@@ -28,7 +28,11 @@ function initializeApp() {
     // Inicializar sparkles dinámicos (deshabilitado - no se renderizaba correctamente)
     // initDynamicSparkles();
 
-    // Envelope behavior policy: default to full animation unless device is very low-power.
+    // La secuencia completa depende de un handoff 3D largo y está diseñada para
+    // punteros finos. En móvil usamos la apertura corta: conserva el gesto de
+    // abrir el sobre sin esperar la animación de escritorio ni forzar filtros
+    // costosos en Safari/Chrome móvil.
+    const mobile = isMobileDevice();
     const veryLow = isVeryLowPowerDevice();
     const low = isLowPowerDevice() && !veryLow;
     const prefersReduced = prefersReducedMotion();
@@ -48,7 +52,7 @@ function initializeApp() {
     const saveData = navigator.connection && navigator.connection.saveData;
     if (prefersReduced || saveData || veryLow) {
         envelopeMode = 'immediate';
-    } else if (low && envelopeMode === 'full') {
+    } else if ((mobile || low) && envelopeMode === 'full') {
         envelopeMode = 'lite';
     }
 
