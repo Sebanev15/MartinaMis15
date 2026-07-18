@@ -46,7 +46,14 @@ styles/                    Estilos, animaciones y reglas responsive
 scripts/main.js            Inicialización y selección del modo de apertura
 scripts/envelope-handlers.js  Transiciones del sobre
 scripts/countdown.js       Cuenta regresiva
+scripts/custom-select.js   Selector accesible de cantidad de asistentes
+scripts/dynamic-sparkles.js  Efectos de destellos dinámicos (opcional)
 scripts/form-handler.js    Envío y validación del RSVP
+scripts/moon-scroll-parallax.js  Movimiento sutil de la luna al hacer scroll
+scripts/parallax.js        Parallax automático para escritorio
+scripts/scroll-observer.js Revelado de secciones al hacer scroll
+scripts/stars.js           Creación de estrellas y luna
+scripts/utils.js           Detección de dispositivo y utilidades compartidas
 apps-script/Code.gs        Backend de referencia para Google Apps Script
 images/                    Recursos visuales
 ```
