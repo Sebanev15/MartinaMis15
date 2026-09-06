@@ -1,5 +1,5 @@
 // ===== MANEJADOR DEL FORMULARIO RSVP =====
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbygZjeeGDwEJ_ppXSv1N0LMNM4n1EDMF9m_EK9JJXEBad7BHtLeBpbyHgr4ZOEu2C0FZg/exec";
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzwlmLfsF1pXDXNFeY6rjmqTVcVow-bU3IqoNpXhvhqzlPM5zMKHOnTBcGpz438GI-3Eg/exec";
 
 const DEFAULT_TRIGGER_LABEL = 'Selecciona...';
 const DEFAULT_SUBMIT_LABEL = 'Confirmar Asistencia';
@@ -17,8 +17,10 @@ export async function handleFormSubmit(e) {
     const submitButton = form.querySelector('button[type="submit"]');
     const cedulaInput = form.querySelector('#cedula');
     const nameInput = form.querySelector('#nombre');
+    const edadInput = form.querySelector('#edad');
     const asistentesSelect = form.querySelector('#asistentes');
     const consideracionesTextarea = form.querySelector('#menu');
+    const musicaInput = form.querySelector('#musica');
 
     // Verificar fecha límite por seguridad
     if (isPastDeadline()) {
@@ -29,9 +31,10 @@ export async function handleFormSubmit(e) {
 
     const cedula = cedulaInput ? cedulaInput.value.trim() : '';
     const name = nameInput ? nameInput.value.trim() : '';
+    const edad = edadInput ? edadInput.value.trim() : '';
     const acompanantes = asistentesSelect ? parseInt(asistentesSelect.value, 10) : 0;
     const consideraciones = consideracionesTextarea ? consideracionesTextarea.value.trim() : '';
-
+    const musica = musicaInput ? musicaInput.value.trim() : '';
     if (!cedula) {
         cedulaInput.focus();
         cedulaInput.reportValidity();
@@ -41,6 +44,12 @@ export async function handleFormSubmit(e) {
     if (!name) {
         nameInput.focus();
         nameInput.reportValidity();
+        return;
+    }
+
+    if(!edad){
+        edadInput.focus();
+        edadInput.reportValidity();
         return;
     }
 
@@ -56,13 +65,17 @@ export async function handleFormSubmit(e) {
     for (let i = 1; i <= acompanantes; i++) {
         const cedId = `acomp_cedula_${i}`;
         const nomId = `acomp_nombre_${i}`;
+        const edadId = `acomp_edad_${i}`;
         const condId = `acomp_condicion_${i}`;
+
         const cedEl = form.querySelector(`#${cedId}`);
         const nomEl = form.querySelector(`#${nomId}`);
+        const edadEl = form.querySelector(`#${edadId}`);
         const condEl = form.querySelector(`#${condId}`);
 
         const aCed = cedEl ? cedEl.value.trim() : '';
         const aNom = nomEl ? nomEl.value.trim() : '';
+        const aEdad = edadEl ? edadEl.value.trim() : '';
         const aCond = condEl ? condEl.value.trim() : '';
 
         if (!aCed || !aNom) {
@@ -72,7 +85,13 @@ export async function handleFormSubmit(e) {
             return;
         }
 
-        accompagnantesData.push({ cedula: aCed, nombre: aNom, condicion: aCond, invitadoPor: name });
+        if (!aEdad){
+            edadEl.focus();
+            edadEl.reportValidity();
+            return;
+        }
+
+        accompagnantesData.push({ cedula: aCed, nombre: aNom, edad: aEdad, condicion: aCond, invitadoPor: name });
     }
 
     submitButton.disabled = true;
@@ -81,8 +100,10 @@ export async function handleFormSubmit(e) {
     const formData = new FormData();
     formData.append('Cedula', cedula);
     formData.append('Nombre', name);
+    formData.append('Edad', edad)
     formData.append('Acompañantes', String(acompanantes));
     formData.append('Consideraciones', consideraciones);
+    formData.append('Musica', musica);
 
     // Enviar datos de acompañantes como JSON serializado
     if (accompagnantesData.length > 0) {
@@ -228,6 +249,17 @@ export function initFormEnhancements() {
             nomInput.placeholder = 'Nombre completo';
             nomInput.required = true;
 
+            const edadLabel = document.createElement('label');
+            edadLabel.setAttribute('for', `acomp_edad_${i}`);
+            edadLabel.textContent = 'Edad';
+            const edadInput = document.createElement('input');
+            edadInput.type = 'text';
+            edadInput.id = `acomp_edad_${i}`;
+            edadInput.name = `acomp_edad_${i}`;
+            edadInput.placeholder = '15';
+            edadInput.required = true;
+
+
             // Condición
             const condLabel = document.createElement('label');
             condLabel.setAttribute('for', `acomp_condicion_${i}`);
@@ -251,6 +283,8 @@ export function initFormEnhancements() {
             block.appendChild(cedInput);
             block.appendChild(nomLabel);
             block.appendChild(nomInput);
+            block.appendChild(edadLabel);
+            block.appendChild(edadInput);
             block.appendChild(condLabel);
             block.appendChild(condInput);
             block.appendChild(invitedBy);

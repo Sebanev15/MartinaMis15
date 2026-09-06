@@ -430,7 +430,7 @@ footer {
     text-align: center;
     color: var(--gold-light);
     font-family: 'Dancing Script', cursive;
-    font-size: clamp(2rem, 6vw, 3rem);
+    font-size: 2rem;
     font-weight: 700;
     text-shadow: 0 2px 15px rgba(217, 70, 166, 0.35);
     letter-spacing: 2px;
